@@ -16,8 +16,10 @@ pre_ui <- sidebarLayout(
   # Show the caption and plot of the requested variable against mpg
   mainPanel(
     h3(textOutput("pre_caption")),
-    plotOutput("pre_os_plot"),
-    plotOutput("pre_pfs_plot"),
+    uiOutput("CHOOSE_SURVIVAL_TYPE"),
+    plotOutput("survival_plot"),
+#    plotOutput("pre_os_plot"),
+#    plotOutput("pre_pfs_plot"),
     tableOutput("pre_my_table")
   ) 
 )

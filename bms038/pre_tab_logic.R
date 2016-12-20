@@ -52,16 +52,21 @@ output$pre_slide_hist <- renderPlot({
 })
 
 # SURVIVAL PLOTS
-output$pre_os_plot <- renderPlot({
+output$CHOOSE_SURVIVAL_TYPE = renderUI( {
+  radioButtons("Survival_Type", label = h3("Choose Survival Type for Analysis"),choices = list("Overall Survival" = 1, "Progression Free Survival" = 2), selected = 1)
+})
+output$survival_plot <- renderPlot({
   #print("Trying to render OS")
   tid <- getPreId(input$genomicSpace, input$pre_sec_var)
-  clever_gg_surv(predat, "OSWK", "OS_event", tid, input$pre_slide1, "Overall Survival")
+        
+  survival_plot = clever_gg_surv(predat, "OSWK", "OS_event", tid, input$pre_slide1, "Overall Survival")
+  switch = input$Survival_Type
+  if (switch == 2 ) {
+    survival_plot = clever_gg_surv(predat, "PFSWK", "PFS_event", tid, input$pre_slide1, "Progression Free Survival")
+  }
+  survival_plot
 })
 
-output$pre_pfs_plot <- renderPlot({
-  tid <- getPreId(input$genomicSpace, input$pre_sec_var)
-  clever_gg_surv(predat, "PFSWK", "PFS_event", tid, input$pre_slide1, "Progression Free Survival")
-})
 
 # SUMMARY TABLE
 #output$pre_my_table <- renderTable({
