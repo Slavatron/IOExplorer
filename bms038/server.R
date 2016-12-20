@@ -21,11 +21,20 @@ preondat <- read.csv("bms038_preon_122016.csv")
 
 # DEFINE SERVER LOGIC
 shinyServer(function(input, output) {
-
+    # DEFINE HEADER BITS ############## DO NOT ALTER ####
+    output$header_image <- renderImage({
+      list(
+        src = "logo_only.png",
+        contentType = "image/png",
+        width = 100,
+        height = 100
+      )
+    },deleteFile=FALSE)  
+    ###### REALLY DON'T ALTER THIS, I CANNOT BELIEVE deleteFile=TRUE IS THE DEFAULT I HATE R #####
+    
 	
-  # RETURN FORMULA TEXT AS A CAPTION
+
   createPreTab(input, output,predat)
-  
   createDiffTab(input, output, preondat)
 
 
