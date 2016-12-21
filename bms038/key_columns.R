@@ -7,9 +7,10 @@ Exome <- list("log10mut" = "Mutation Load (log)",
               )
 
 # Need to add in other T-cell metrics from Jonathan here
-TCR <- list("TCR.Diversity.D90" = "D90",
-            "TCR.DeltaH" = "TCR.DeltaH",
-            "TCR.DeltaCL" = "TCR.DeltaCL"
+TCR <- list("TCR.D90" = "D90",
+            "TCR_TIL" = "TCR_TIL"
+#            "TCR.DeltaH" = "TCR.DeltaH",
+#            "TCR.DeltaCL" = "TCR.DeltaCL"
             )
 
 # Need to add other signatures from Alexis here
