@@ -1,85 +1,15 @@
 library(shiny)
 library(plotly)
-source("key_columns.R")
 
-### Layout for Pre-treatment analysis
-varList <- names(pre_choice1)
-pre_ui <- sidebarLayout(
-  sidebarPanel(
-    wellPanel(
-      selectInput("genomicSpace", "Genomic Space:", varList),
-      uiOutput("pre_Second"),
-      uiOutput("pre_Slider")
-    ),
-    plotOutput("pre_slide_hist")
-  ),
-  
-  # Show the caption and plot of the requested variable against mpg
-  mainPanel(
-    h3(textOutput("pre_caption")),
-    uiOutput("CHOOSE_SURVIVAL_TYPE"),
-    plotOutput("survival_plot"),
-#    plotOutput("pre_os_plot"),
-#    plotOutput("pre_pfs_plot"),
-    tableOutput("pre_my_table")
-  ) 
-)
-######################################################
+source("pre_UI.R")
+source("diff_UI.R")
+source("cross_UI.R")
 
 
-### Layout for On-Pre Analysis ###
 
-diff_ui <- sidebarLayout(
-  sidebarPanel(
-    wellPanel(
-      selectInput("diff_genomicSpace", "Genomic Space:", varList),
-      uiOutput("diff_Second"),
-      uiOutput("diff_Slider")
-    ),
-    plotOutput("diff_slide_hist")
-  ),
-  
-  # Show the caption and plot of the requested variable against mpg
-  mainPanel(
-    h3(textOutput("diff_caption")),
-    plotOutput("diff_os_plot"),
-    plotOutput("diff_pfs_plot"),
-    tableOutput("diff_my_table")
-  ) 
-)
-
-######################################################
-
-### Layout for Cross-Correlation analysis
-cross_ui <- sidebarLayout(
-  sidebarPanel(
-    wellPanel(
-#      selectInput("genomicSpace", "Genomic Space:", varList),
-      uiOutput("cross_Y_var"),
-#      uiOutput("cross_Second"),
-      uiOutput("cross_X_var"),
-#      uiOutput("cross_Second_2"),
-      uiOutput("cross_Slider")
-    ),
-    plotOutput("cross_slide_hist")
-  ),
-  
-  # Show the caption and plot of the requested variable against mpg
-  mainPanel(
-    h3(textOutput("cross_caption")),
-    plotOutput("corr_plot"),
-    uiOutput("cross_Second"),
-    uiOutput("cross_Second_2"),
-    plotlyOutput("cross_Scatter_plot")
-#    plotOutput("pre_os_plot"),
-#    plotOutput("pre_pfs_plot"),
-#    tableOutput("pre_my_table")
-  ) 
-)
-######################################################
-
-
-#diff_ui <- mainPanel(headerPanel("Nothing here yet", "junk"))
+pre_ui <- createPreTabUI()
+diff_ui <- createDiffTabUI()
+cross_ui <- createCrossTabUI()
 clone_ui <- mainPanel(headerPanel("Nothing here yet", "junk"))
 gene_exp_ui <- mainPanel(headerPanel("Nothing here yet", "junk"))
 gene_clus_ui <- mainPanel(headerPanel("Nothing here yet", "junk"))
