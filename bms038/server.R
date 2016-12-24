@@ -17,6 +17,7 @@ source("cross_tab_logic.R")
 predat = read.csv("bms038_data_122016.csv")
 # REMOVE ON-TREATMENT SAMPLES
 predat = predat[predat$SampleType == "pre",]
+predat$myBOR <- factor(predat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
 
 preondat <- read.csv("bms038_preon_122016.csv")
 
