@@ -44,19 +44,21 @@ createPreTab <- function(input,output, predat) {
 
   # SURVIVAL PLOTS
   output$pre_choose_survival_type = renderUI( {
-    radioButtons("Survival_Type", label = "Outcome to Analyze: ",choices = list("Overall Survival" = 1, "Progression Free Survival" = 2), inline=TRUE, selected = 1)
+    radioButtons("pre_Survival_Type", label = "Outcome to Analyze: ",choices = list("Overall Survival (OS)" = 1, "Progression Free Survival (PFS)" = 2), inline=TRUE, selected = 1)
   })
   
   output$pre_survival_plot <- renderPlot({
-    #print("Trying to render OS")
     tid <- getPreId(input$pre_genomicSpace, input$pre_sec_var)
         
-    survival_plot = clever_gg_surv(predat, "OSWK", "OS_event", tid, input$pre_slide1, "Overall Survival")
-    switch = input$Survival_Type
-    if (switch == 2 ) {
-      survival_plot = clever_gg_surv(predat, "PFSWK", "PFS_event", tid, input$pre_slide1, "Progression Free Survival")
+    switch = input$pre_Survival_Type
+    if (switch == 1 ) {
+      mytit = paste("OS by", input$pre_sec_var)
+      survival_plot = clever_gg_surv(predat, "OSWK", "OS_event", tid, input$pre_slide1, mytit)
+    } else {
+      mytit = paste("PFS by", input$pre_sec_var)
+      survival_plot = clever_gg_surv(predat, "PFSWK", "PFS_event", tid, input$pre_slide1, mytit)
     }
-    survival_plot
+    return(grid.draw(survival_plot))
   })
 
 
