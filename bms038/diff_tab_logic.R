@@ -1,5 +1,6 @@
 # Included from server.R
 # Logic for guiding Change on therapy  Tab
+source("key_columns.R")
 
 getDiffId <- function(genomicSpace, feature) {
   if ( is.null(genomicSpace) || genomicSpace == "") {

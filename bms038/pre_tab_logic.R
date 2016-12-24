@@ -1,5 +1,6 @@
 # Included from server.R
 # Logic for guiding Pre Treatment Tab
+source("key_columns.R")
 
 # Utility function (need to document)
 getPreId <- function(genomicSpace, feature) {
