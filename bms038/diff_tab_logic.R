@@ -2,18 +2,6 @@
 # Logic for guiding Change on therapy  Tab
 source("key_columns.R")
 
-getDiffId <- function(genomicSpace, feature) {
-  if ( is.null(genomicSpace) || genomicSpace == "") {
-    return(-1)
-  }
-  if (is.null(feature) || feature == ""  ) {
-    return(-1)
-  }
-  tid <- which(diff_choice1[[genomicSpace]] == feature)
-  tid <- names(diff_choice1[[genomicSpace]])[tid]
-  return(tid)
-}
-
 createDiffTab <- function(input,output, preondat) {
 
   output$diff_Second = renderUI( {
@@ -23,21 +11,21 @@ createDiffTab <- function(input,output, preondat) {
   # SLIDER FOR DEFINING CUT-POINT
   output$diff_Slider = renderUI({
     # Figure out which variable to look up in raw data
-    tid <- getDiffId(input$diff_genomicSpace, input$diff_sec_var)
-    if ( tid == -1 ) { return() }
+    tid <- getDiffId()
+    if ( tid == -1 ) { return(NULL) }
     print(sprintf("diff_slider %s %s", input$diff_genomicSpace, input$diff_sec_var))
     medv <- median(preondat[,tid], na.rm = TRUE)
-    minv <- min(preondat[,tid], na.rm = TRUE)
-    maxv <- max(preondat[,tid], na.rm = TRUE)
+    minv <- round(min(preondat[,tid], na.rm = TRUE), digits=3)
+    maxv <- round(max(preondat[,tid], na.rm = TRUE), digits=3)
     print(sprintf("min = %.2f max = %.2f med = %.2f", minv, maxv, medv))
-    sliderInput("diff_slide1", label = h3(paste(input$diff_sec_var)), min = minv, max = maxv, value = medv, round = FALSE)
+    sliderInput("diff_slide1", label = h3(paste(input$diff_sec_var)), min = minv, max = maxv, value = medv, round = -2)
   })
 
   # SLIDER-CONTROLLED HISTOGRAM
   output$diff_slide_hist <- renderPlot({
     # Figure out which variable to look up in raw data
-    tid <- getDiffId(input$diff_genomicSpace, input$diff_sec_var)
-    if ( tid == -1 ) { return() }
+    tid <- getDiffId()
+    if ( tid == -1 ) { return(NULL) }
     print(sprintf("Make histogram, tid='%s' genomicSpace='%s', feature='%s'", input$tid, input$diff_genomicSpace, input$diff_sec_var))
     niceHist(preondat[,tid], input$diff_sec_var, input$diff_slide1)
   })
@@ -49,7 +37,8 @@ createDiffTab <- function(input,output, preondat) {
   
 
   output$diff_survival_plot <- renderPlot({
-    tid <- getDiffId(input$diff_genomicSpace, input$diff_sec_var)
+    tid <- getDiffId()
+    if ( tid == -1 ) { return(NULL) }
     
     switch = input$diff_Survival_Type
     if (switch == 1 ) {
@@ -60,6 +49,20 @@ createDiffTab <- function(input,output, preondat) {
       survival_plot = clever_gg_surv(preondat, "PFSWK", "PFS_event", tid, input$diff_slide1, mytit)
     }
     return(grid.draw(survival_plot))
+  })
+  
+  getDiffId <- reactive({
+    genomicSpace <- input$diff_genomicSpace
+    feature <- input$diff_sec_var
+    if ( is.null(genomicSpace) || genomicSpace == "") {
+      return(-1)
+    }
+    if (is.null(feature) || feature == ""  ) {
+      return(-1)
+    }
+    tid <- which(diff_choice1[[genomicSpace]] == feature)
+    tid <- names(diff_choice1[[genomicSpace]])[tid]
+    return(tid)
   })
   
 # SUMMARY TABLE

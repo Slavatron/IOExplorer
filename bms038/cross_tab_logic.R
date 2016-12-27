@@ -19,17 +19,9 @@ getCrossID <- function(genomicSpace, feature) {
 
 createCrossCorrTab <- function(input,output, predat) {
   # INTERACTIVE UI FOR VARIABLE SELECTION DROP-DOWN MENUS
-  varList_copy = names(pre_choice1)
-  output$cross_Y_var = renderUI( {
-    selectInput("genomicSpace_Y", "Y-Axis Genomic Space:", varList_copy)
-  })
-  
+
   output$cross_Second = renderUI( {
     selectInput("cross_sec_var", "Y-Axis Feature", choices = unname(pre_choice1[[input$genomicSpace_Y]]))
-  })
-
-  output$cross_X_var = renderUI( {
-    selectInput("genomicSpace_X", "X-Axis Genomic Space:", varList_copy)
   })
 
   output$cross_Second_2 = renderUI( {
@@ -70,16 +62,23 @@ createCrossCorrTab <- function(input,output, predat) {
     tid_x <- getCrossID(input$genomicSpace_X, input$cross_sec_var_2)
     tid_y <- getCrossID(input$genomicSpace_Y, input$cross_sec_var)  
   
+    if (tid_x == -1 || tid_y == -1) { return }
+    
     # note ordering here on scale_colour_manual works, because myBOR is a factor ordered appropritely
+    tit_txt <- paste(input$cross_sec_var, " vs ", input$cross_sec_var_2)
     s_plot = ggplot(predat, aes_string(x = tid_x, y = tid_y, text = predat$PatientID.x, color = predat$myBOR)) +
       geom_point() +
       scale_colour_manual(name = "", 
                         labels = c("PR/CR","SD","PD"), 
                         values = c("green", "orange","red")) +
-      ggtitle("interACTIVE") +
-      xlab(input$cross_sec_var_2) + ylab(input$cross_sec_var)
+      #ggtitle(tit_txt) +
+      xlab(input$cross_sec_var_2) + ylab(input$cross_sec_var) +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5))
     
-    p = ggplotly(s_plot, tooltip = c("text","color"))
+    
+    p = ggplotly(s_plot, tooltip = c("text","color","x","y"))
     return(p)
   })
 

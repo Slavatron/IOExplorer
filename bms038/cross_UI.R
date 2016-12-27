@@ -1,13 +1,15 @@
 # Create Cross Correlation TAB UI
+source("key_columns.R")
 
 createCrossTabUI <- function() {
+  varList_copy <- names(pre_choice1)
   ### Layout for Cross-Correlation analysis
   cross_ui <- sidebarLayout(
     sidebarPanel(
       wellPanel(
-        uiOutput("cross_Y_var"),
+        selectInput("genomicSpace_Y", "Y-Axis Genomic Space:", varList_copy),
         uiOutput("cross_Second"),
-        uiOutput("cross_X_var"),
+        selectInput("genomicSpace_X", "X-Axis Genomic Space:", varList_copy),
         uiOutput("cross_Second_2")
       )
     ),

@@ -9,7 +9,7 @@ createPreTabUI <- function() {
   pre_ui <- sidebarLayout(
     sidebarPanel(
       wellPanel(
-        selectInput("pre_genomicSpace", "Genomic Space:", varList),
+        selectInput("pre_genomicSpace", "Genomic Space:", varList, selected="Exome"),
         uiOutput("pre_Second"),
         uiOutput("pre_Slider")
       ),

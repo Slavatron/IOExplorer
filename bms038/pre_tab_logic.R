@@ -2,19 +2,6 @@
 # Logic for guiding Pre Treatment Tab
 source("key_columns.R")
 
-# Utility function (need to document)
-getPreId <- function(genomicSpace, feature) {
-  if ( is.null(genomicSpace) || genomicSpace == "") {
-    return(-1)
-  }
-  if (is.null(feature) || feature == ""  ) {
-    return(-1)
-  }
-  tid <- which(pre_choice1[[genomicSpace]] == feature)
-  tid <- names(pre_choice1[[genomicSpace]])[tid]
-  return(tid)
-}
-
 
 createPreTab <- function(input,output, predat) {
 
@@ -25,21 +12,22 @@ createPreTab <- function(input,output, predat) {
   # SLIDER FOR DEFINING CUT-POINT
   output$pre_Slider = renderUI({
     # Figure out which variable to look up in raw data
-    tid <- getPreId(input$pre_genomicSpace, input$pre_sec_var)
+    tid <- getPreId()
     if ( tid == -1 ) { return() }
     #print(sprintf("pre_slider %s %s", input$pre_genomicSpace, input$pre_sec_var))
     medv <- median(predat[,tid], na.rm = TRUE)
     minv <- min(predat[,tid], na.rm = TRUE)
-    maxv <- max(predat[,tid], na.rm = TRUE)
+    maxv <- round(max(predat[,tid], na.rm = TRUE), digits=3)
     #print(sprintf("min = %.2f max = %.2f med = %.2f", minv, maxv, medv))
-    sliderInput("pre_slide1", label = h3(paste(input$pre_sec_var)), min = minv, max = maxv, value = medv, round = FALSE)
+    sliderInput("pre_slide1", label = h3(paste(input$pre_sec_var)), min = minv, max = maxv, value = medv, round = -2)
   })
 
   # SLIDER-CONTROLLED HISTOGRAM 
   output$pre_slide_hist <- renderPlot({
     # Figure out which variable to look up in raw data
-    tid <- getPreId(input$pre_genomicSpace, input$pre_sec_var)
-    if ( tid == -1 ) { return() }
+    tid <- getPreId()
+    # make sure key variables defined already
+    if (tid == -1 || is.null(input$pre_slide1) ) { return(NULL) }
     niceHist(predat[,tid], input$pre_sec_var, cutpoint=input$pre_slide1)
   })
 
@@ -49,7 +37,8 @@ createPreTab <- function(input,output, predat) {
   })
   
   output$pre_survival_plot <- renderPlot({
-    tid <- getPreId(input$pre_genomicSpace, input$pre_sec_var)
+    tid <- getPreId()
+    if (tid == -1 || is.null(input$pre_slide1) ) { return(NULL) }
         
     switch = input$pre_Survival_Type
     if (switch == 1 ) {
@@ -63,6 +52,25 @@ createPreTab <- function(input,output, predat) {
   })
 
 
+  # Utility function (need to document)
+  getPreId <- reactive({
+    print("in getPreId")
+    genomicSpace <- input$pre_genomicSpace
+    feature <- input$pre_sec_var
+    if ( is.null(genomicSpace) || genomicSpace == "") {
+      print("genomic space undefined")
+      return(-1)
+    }
+    if (is.null(feature) || feature == ""  ) {
+      print("feature undefined")
+      return(-1)
+    }
+    print(sprintf("Requesting preid genomicSpace='%s', feature ='%s'", genomicSpace, feature))
+    tid <- which(pre_choice1[[genomicSpace]] == feature)
+    tid <- names(pre_choice1[[genomicSpace]])[tid]
+    return(tid)
+  })
+  
   # SUMMARY TABLE
   #output$pre_my_table <- renderTable({
   #  mini_table = predat[,c("Sample", input$sec_var, "PFS", "PFS_SOR", "OS", "OS_SOR", "myBOR" )]

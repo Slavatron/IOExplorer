@@ -22,7 +22,7 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
   if(missing(cut)) {
     cut = median(temp_dat[,v])
   }
-  print("Here in gg_surv 2 (start)")
+  #print("Here in gg_surv 2 (start)")
   temp_dat$Var = temp_dat[,v]
   temp_dat$Bin = 0
   temp_dat[temp_dat$Var <= cut,]$Bin = 1
@@ -32,7 +32,7 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
   n0 = nrow(temp_dat) - n1
   
   # FIT CURVE
-  print("Here in gg_surv 2 (fitting)")
+  #print("Here in gg_surv 2 (fitting)")
   fit1 = survfit(Surv(temp_dat[,t], temp_dat[,e]) ~ temp_dat$Bin)
   log_rank = survdiff(Surv(temp_dat[,t], temp_dat[,e]) ~ temp_dat$Bin)
   pval = 1 - pchisq(log_rank$chisq, 1)
@@ -50,6 +50,8 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
     xlab(xlabT) + 
     ggtitle(tit) + 
     guides(linetype = F) +
+    # fix issues with axis starting point
+    scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0), limits=c(0,1)) +
 #    scale_colour_discrete(name = paste(v), breaks = c(0,1), labels = c(paste("Below (n =", n0, ")" ), paste("Above (n =", n1, ")"))) +
     scale_colour_manual(name = "", breaks = c(0,1), 
                         labels = c(paste("Above (n =", n0, ")"), paste("Below (n =", n1, ")")), 
@@ -57,8 +59,9 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
     theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5))
+    
   
-  print('HERE in gg_Surv 2 (near bot')
+  #print('HERE in gg_Surv 2 (near bot')
   fig2 <- arrangeGrob(fig, sub = textGrob(pv_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)),
                     heights=c(0.8, 0.2))
   
