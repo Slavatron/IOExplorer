@@ -1,10 +1,12 @@
 library(shiny)
 library(plotly)
+library(Cairo)
 
 source("pre_UI.R")
 source("diff_UI.R")
 source("cross_UI.R")
 
+options(bitmapType='cairo')
 
 
 pre_ui <- createPreTabUI()

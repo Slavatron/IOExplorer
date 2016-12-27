@@ -63,6 +63,8 @@ createCrossCorrTab <- function(input,output, predat) {
     tid_y <- getCrossID(input$genomicSpace_Y, input$cross_sec_var)  
   
     if (tid_x == -1 || tid_y == -1) { return }
+
+    pdf(NULL);
     
     # note ordering here on scale_colour_manual works, because myBOR is a factor ordered appropritely
     tit_txt <- paste(input$cross_sec_var, " vs ", input$cross_sec_var_2)
