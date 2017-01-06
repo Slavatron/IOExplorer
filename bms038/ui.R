@@ -5,6 +5,7 @@ library(Cairo)
 source("pre_UI.R")
 source("diff_UI.R")
 source("cross_UI.R")
+source("selector_UI.R")
 
 options(bitmapType='cairo')
 
@@ -17,7 +18,8 @@ clone_ui <- mainPanel(h3("Tumor Clonality Analysis"), "analyze tumor clonal chan
 gene_exp_ui <- mainPanel(h3("Gene expression analysis"), "Under development...")
 tcr_ui <- mainPanel(h3("TCR Analysis"), "per Jenny..")
 neoantigen_ui <- mainPanel(h3("Neo-antigen Analysis"), "per Vlad...")
-selector_ui <- mainPanel(h3("Select patients"), "Under development... select patients for analysis")
+selector_ui <- createSelectorTabUI()
+#selector_ui <- mainPanel(h3("Select patients"), "Under development... select patients for analysis")
 
 # HEADER
 hPanel <- headerPanel(

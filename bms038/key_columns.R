@@ -65,3 +65,7 @@ IHC_Diff <- list("delt.PDL1.1plus.pos" = "PDL1 Positive",
 
 # COMBINE INTO SINGLE LIST
 diff_choice1 = list("Exome" = unlist(Exome_Diff), "RNASeq" = unlist(RNASeq_Diff), "IHC" = unlist(IHC_Diff), "TCR" = unlist(TCR_Diff), "Immune Deconvolution" = unlist(ImmuneDeconvolution_Diff))
+
+###################################################
+
+selector_choice1 = pre_choice1 
