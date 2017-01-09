@@ -1,5 +1,5 @@
 
-# CLEVER SURVIVAL FUNCTION
+# FUNCTION: clever_gg_surv()
 # SUMMARY: 
 # Creates a plot summarizing survival analysis based on a single predictive variable. Predictive variable is treated as both a continuous predictor and as a binary variable based on a cut-point. 
 # 
@@ -76,6 +76,57 @@ niceHist <- function(data, title, cutpoint) {
     theme_minimal() +
     theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5))
   my_hist
+}
+
+# FUNCTION: Count_Data_Barplot()
+# SUMMARY: 
+# Compares two categorical variables. 
+# Returns a plot, contingency table, Chi-Square/Fisher Test results and Chi-Square/Fisher Test p-values
+#' @param df name of dataframe
+#' @param x categorical variable displayed on x-axis
+#' @param g categorical variable displayed as groups
+#' @param x_lab optional input for labelling x-axis
+#' @param g_lab optional input for labelling groups
+#' @param title optional input for plot's title
+Count_Data_Bar = function(df, x, g, x_lab, g_lab, title) {
+  # ENSURE ARGUMENTS ARE VALID
+  if (!class(df) == "data.frame") { stop("df should be a data.frame")}
+  if (!x %in% names(df)) { stop("x is not a variable in df")}
+  if (!class(df[,x]) %in% c("logical", "factor", "integer")) { stop("x should be a categorical variable")}
+  if (!g %in% names(df)) { stop("g is not a variable in df")}
+  if (!class(df[,g]) %in% c("logical", "factor", "integer")) { stop("g should be a categorical variable")}
+  # ASSIGN TITLE AND LABEL NAMES IF NOT PROVIDED
+  if (missing(title)) {title = ""}
+  if (missing(x_lab)) {x_lab = x}
+  if (missing(g_lab)) {g_lab = "Group"}
+  # REMOVE ROWS LACKING DATA
+  df = df[!is.na(df[,x]),]
+  df = df[!is.na(df[,g]),]
+  # MAKE SURE THERE AREN'T TOO MANY VALUES OF EITHER VARIABLE
+  # (CONTINGENCY TABLES LARGER THAN 4 x 3 HAVEN'T WORKED)
+  if (length(unique(df[,x])) > 3) { stop("x should have 3 or fewer values")}
+  if (length(unique(df[,g])) > 4) { stop("g should have 4 or fewer values")}
+  # CREATE CONTINGENCY TABLE
+  C_table = table(df[,x], df[,g])
+  # EXECUTE CHI-SQUARE TEST
+  Chi_Obj = chisq.test(C_table)
+  Chi_P = Chi_Obj$p.value
+  # EXECUTE FISHER TEST
+  Fish_Obj = fisher.test(C_table)
+  Fish_P = Fish_Obj$p.value
+  # CREATE PLOTTING TABLE
+  P_table = data.frame(Count = as.numeric(C_table), Group = rep(c(dimnames(C_table)[[1]]), ncol(C_table)), Var = rep(c(dimnames(C_table)[[2]]), each = nrow(C_table)))  
+  # RENAME 'GROUP' COLUMN TO MATCH LABEL
+  names(P_table)[2] = g_lab
+  # CREATE GGPLOT OBJECT
+  p = ggplot(P_table, aes(x = Var, y = Count)) + 
+    geom_bar(aes_string(x = "Var", y = "Count", fill = g_lab), position = "dodge", stat = "identity") + 
+    ggtitle(paste(title)) +
+    xlab(paste(x_lab)) + 
+    theme_minimal() +
+    theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5))
+  # PUT ALL OUTPUTS INTO A LIST OBJECT
+  out_list = list("ggplot Object" = p, "Contingency Table" = C_table, "Chi-Squared Test Results" = Chi_Obj, "Chi-Squared Test P-Value" = Chi_P, "Fisher Test Results" = Fish_Obj, "Fisher Test P-Value" = Fish_P)
 }
 
 # FUNCTION FOR PRODUCING BOX PLOTS WITH P VALUES
