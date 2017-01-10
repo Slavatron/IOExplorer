@@ -68,6 +68,12 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
   return(fig2)
 }
 
+# FUNCTION: niceHist()
+# SUMMARY: 
+# Creates a histogram with a vertical line bisecting the data
+#' @param data to be plotted as histogram
+#' @param title for the plot
+#' @param cutpoint within the range of data to be displayed as a vertical line
 niceHist <- function(data, title, cutpoint) {
   my_hist = qplot(data) +
     geom_histogram(fill = "forestgreen") +
@@ -88,7 +94,7 @@ niceHist <- function(data, title, cutpoint) {
 #' @param x_lab optional input for labelling x-axis
 #' @param g_lab optional input for labelling groups
 #' @param title optional input for plot's title
-Count_Data_Bar = function(df, x, g, x_lab, g_lab, title) {
+Count_Data_Barplot = function(df, x, g, x_lab, g_lab, title) {
   # ENSURE ARGUMENTS ARE VALID
   if (!class(df) == "data.frame") { stop("df should be a data.frame")}
   if (!x %in% names(df)) { stop("x is not a variable in df")}
@@ -127,6 +133,54 @@ Count_Data_Bar = function(df, x, g, x_lab, g_lab, title) {
     theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5))
   # PUT ALL OUTPUTS INTO A LIST OBJECT
   out_list = list("ggplot Object" = p, "Contingency Table" = C_table, "Chi-Squared Test Results" = Chi_Obj, "Chi-Squared Test P-Value" = Chi_P, "Fisher Test Results" = Fish_Obj, "Fisher Test P-Value" = Fish_P)
+}
+
+# FUNCTION: clever_gg_boxplot()
+# SUMMARY: 
+# Compares continuous and categorical variables.
+# Returns ggplot object and T-Test/Wilcoxon Rank-Sum test results, 
+#' @param df name of dataframe
+#' @param x categorical variable
+#' @param y continuous variable displayed 
+#' @param x_lab optional input for labelling x-axis
+#' @param y_lab optional input for labelling y-axis
+#' @param title optional input for plot's title
+clever_gg_boxplot = function(df, x, y, x_lab, y_lab, title) {
+  # ENSURE ARGUMENTS ARE VALID
+  if (!class(df) == "data.frame") { stop("df should be a data.frame")}
+  if (!x %in% names(df)) { stop("x is not a variable in df")}
+  if (!class(df[,x]) %in% c("logical", "factor", "integer")) { stop("x should be a categorical variable")}
+  if (!y %in% names(df)) { stop("y is not a variable in df")}
+  if (!class(df[,y]) %in% c("numeric", "integer")) { stop("x should be a continuous variable")}
+  # ASSIGN TITLE AND LABEL NAMES IF NOT PROVIDED
+  if (missing(title)) {title = ""}
+  if (missing(x_lab)) {x_lab = ""}
+  if (missing(y_lab)) {y_lab = y}
+  # REMOVE ROWS LACKING DATA
+  df = df[!is.na(df[,x]),]
+  df = df[!is.na(df[,y]),]
+  
+  # maybe do some other quality control...?
+  
+  # GET SUMMARY TABLE FOR CATEGORICAL VARIABLE
+  C_table = table(df[,x])
+  # COMBINE COUNTS AND NAMES INTO CHARACTER VECTOR
+  C_names = as.character(unlist(dimnames(C_table)))
+  C_nums = as.numeric(C_table)
+  C_labels = paste(C_names, "\n(n = ", C_nums, ")", sep="")
+  # RUN PAIR-WISE TESTS:
+  T_obj = pairwise.t.test(df[,y], df[,x])
+  W_obj = pairwise.wilcox.test(df[,y], df[,x])
+  # CREATE GGPLOT OBJECT
+  p = ggplot(df, aes_string(x = x, y = y)) +
+    geom_boxplot(aes_string(fill = x)) +
+    ggtitle(paste(title)) +
+    xlab(paste(x_lab)) + 
+    scale_x_discrete(labels = C_labels) +
+    ylab(paste(y_lab)) +
+    theme_minimal() +
+    theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5), legend.position = "none")
+  out_list = list("ggplot Object" = p, "Group Count Table" = C_table, "T-Test Object" = T_obj, "Wilcoxon Rank Sum Object" = W_obj)
 }
 
 # FUNCTION FOR PRODUCING BOX PLOTS WITH P VALUES
