@@ -94,17 +94,13 @@ niceHist <- function(data, title, cutpoint) {
 #' @param x_lab optional input for labelling x-axis
 #' @param g_lab optional input for labelling groups
 #' @param title optional input for plot's title
-Count_Data_Barplot = function(df, x, g, x_lab, g_lab, title) {
+Count_Data_Barplot = function(df, x, g, x_lab = x, g_lab = "Group", title = "") {
   # ENSURE ARGUMENTS ARE VALID
   if (!class(df) == "data.frame") { stop("df should be a data.frame")}
   if (!x %in% names(df)) { stop("x is not a variable in df")}
   if (!class(df[,x]) %in% c("logical", "factor", "integer")) { stop("x should be a categorical variable")}
   if (!g %in% names(df)) { stop("g is not a variable in df")}
   if (!class(df[,g]) %in% c("logical", "factor", "integer")) { stop("g should be a categorical variable")}
-  # ASSIGN TITLE AND LABEL NAMES IF NOT PROVIDED
-  if (missing(title)) {title = ""}
-  if (missing(x_lab)) {x_lab = x}
-  if (missing(g_lab)) {g_lab = "Group"}
   # REMOVE ROWS LACKING DATA
   df = df[!is.na(df[,x]),]
   df = df[!is.na(df[,g]),]
@@ -145,17 +141,13 @@ Count_Data_Barplot = function(df, x, g, x_lab, g_lab, title) {
 #' @param x_lab optional input for labelling x-axis
 #' @param y_lab optional input for labelling y-axis
 #' @param title optional input for plot's title
-clever_gg_boxplot = function(df, x, y, x_lab, y_lab, title) {
+clever_gg_boxplot = function(df, x, y, x_lab = "", y_lab = y, title = "") {
   # ENSURE ARGUMENTS ARE VALID
   if (!class(df) == "data.frame") { stop("df should be a data.frame")}
   if (!x %in% names(df)) { stop("x is not a variable in df")}
   if (!class(df[,x]) %in% c("logical", "factor", "integer")) { stop("x should be a categorical variable")}
   if (!y %in% names(df)) { stop("y is not a variable in df")}
   if (!class(df[,y]) %in% c("numeric", "integer")) { stop("x should be a continuous variable")}
-  # ASSIGN TITLE AND LABEL NAMES IF NOT PROVIDED
-  if (missing(title)) {title = ""}
-  if (missing(x_lab)) {x_lab = ""}
-  if (missing(y_lab)) {y_lab = y}
   # REMOVE ROWS LACKING DATA
   df = df[!is.na(df[,x]),]
   df = df[!is.na(df[,y]),]
