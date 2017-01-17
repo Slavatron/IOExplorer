@@ -9,7 +9,8 @@ require(plotly)
 
 source("key_columns.R")
 source("graphs.R")
-source("pre_tab_logic.R")
+#source("pre_tab_logic.R")
+source("Modules.R")
 source("diff_tab_logic.R")
 source("cross_tab_logic.R")
 source("selector_tab_logic.R")
@@ -34,7 +35,8 @@ shinyServer(function(input, output) {
     temp2 = full_dat
     values$predat_1 = temp2
  })
-  createPreTab(input, output,predat)
+#  createPreTab(input, output,predat)
+  callModule(Genomics_Outcome, "PRE", pre_choice1, predat)
   createDiffTab(input, output, preondat)
   createCrossCorrTab(input, output, predat)
   createSelectorTab(input, output, values$predat_1)

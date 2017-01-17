@@ -2,7 +2,8 @@ library(shiny)
 library(plotly)
 library(Cairo)
 
-source("pre_UI.R")
+#source("pre_UI.R")
+source("Modules.R")
 source("diff_UI.R")
 source("cross_UI.R")
 source("selector_UI.R")
@@ -10,7 +11,7 @@ source("selector_UI.R")
 options(bitmapType='cairo')
 
 
-pre_ui <- createPreTabUI()
+#pre_ui <- createPreTabUI()
 diff_ui <- createDiffTabUI()
 cross_ui <- createCrossTabUI()
 cross_diff_ui <- mainPanel(headerPanel("On therapy correlations"), "This will be similiar to pre-therapy correlation tab but with differences instead")
@@ -42,7 +43,8 @@ hPanel <- headerPanel(
 
 ui<-navbarPage("BMS038", 
            navbarMenu("Genomics & Outcome", 
-                      tabPanel("Pre-therapy",pre_ui),
+#                      tabPanel("Pre-therapy",pre_ui),
+                      tabPanel("Pre-therapy", Genomics_OutcomeUI("PRE", pre_choice1)),
                       tabPanel("Change on therapy", diff_ui)),
            tabPanel("Clonality", clone_ui),
            navbarMenu("Correlation",
