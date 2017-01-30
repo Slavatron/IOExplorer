@@ -31,12 +31,21 @@ shinyServer(function(input, output) {
 # CREATE REACTIVE DATA FRAME TO TRACK PATIENT SELECTION
   Filtered_Pre_Data = callModule(Selection_Module, "GLOBAL", DEMO_LIST, predat)
 
+# PULL SAMPLE LIST OUT OF FILTERED DATA TO USE
+  Filt_Preon = reactive({
+    my_samples = Filtered_Pre_Data()[,"PatientID.x"]
+    my_dat = preondat[preondat$id %in% my_samples,]
+    return(my_dat)
+  })
+
 # FEED REACTIVE DATA FRAME INTO OTHER TABS AS A FUNCTION CALL
   callModule(Genomics_Outcome, "PRE", pre_choice1, Filtered_Pre_Data)
 #  callModule(Genomics_Outcome, "PRE", pre_choice1, predat)
 
 
-  createDiffTab(input, output, preondat)
-  createCrossCorrTab(input, output, predat)
+#  createDiffTab(input, output, preondat)
+  callModule(Genomics_Outcome, "PREON", diff_choice1, Filt_Preon)
+
+ createCrossCorrTab(input, output, predat)
 #  createSelectorTab(input, output, values$predat_1)
 })
