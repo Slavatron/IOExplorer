@@ -6,7 +6,8 @@ library(Cairo)
 source("Modules.R")
 source("diff_UI.R")
 source("cross_UI.R")
-source("selector_UI.R")
+#source("selector_UI.R")
+source("Selector_Module.R")
 
 options(bitmapType='cairo')
 
@@ -19,7 +20,7 @@ clone_ui <- mainPanel(h3("Tumor Clonality Analysis"), "analyze tumor clonal chan
 gene_exp_ui <- mainPanel(h3("Gene expression analysis"), "Under development...")
 tcr_ui <- mainPanel(h3("TCR Analysis"), "per Jenny..")
 neoantigen_ui <- mainPanel(h3("Neo-antigen Analysis"), "per Vlad...")
-selector_ui <- createSelectorTabUI()
+#selector_ui <- createSelectorTabUI()
 #selector_ui <- mainPanel(h3("Select patients"), "Under development... select patients for analysis")
 
 # HEADER
@@ -42,6 +43,9 @@ hPanel <- headerPanel(
 #ui <- fluidPage(hPanel, tabui)
 
 ui<-navbarPage("BMS038", 
+# PATIENT SELECTION MIGHT NEED TO BE THE FIRST TAB IF OTHER TABS USE ITS OUTPUT
+           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", DEMO_LIST)),
+
            navbarMenu("Genomics & Outcome", 
 #                      tabPanel("Pre-therapy",pre_ui),
                       tabPanel("Pre-therapy", Genomics_OutcomeUI("PRE", pre_choice1)),
@@ -53,7 +57,7 @@ ui<-navbarPage("BMS038",
            tabPanel("Gene Expr", gene_exp_ui),
            tabPanel("TCR", tcr_ui),
            tabPanel("Neo-antigens", neoantigen_ui),
-           tabPanel("Select Patients", selector_ui),
+#           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", DEMO_LIST)),
            header=hPanel
            )
   

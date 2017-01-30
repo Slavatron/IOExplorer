@@ -13,7 +13,8 @@ source("graphs.R")
 source("Modules.R")
 source("diff_tab_logic.R")
 source("cross_tab_logic.R")
-source("selector_tab_logic.R")
+#source("selector_tab_logic.R")
+source("Selector_Module.R")
 
 # READ IN FILE
 predat = read.csv("bms038_data_122016.csv")
@@ -26,18 +27,16 @@ preondat <- read.csv("bms038_preon_122016.csv")
 
 # DEFINE SERVER LOGIC
 shinyServer(function(input, output) {
-  values = reactiveValues(predat_1 = predat)
-  observeEvent(input$set_filter, {
-    temp1 = half_dat
-    values$predat_1 = temp1
- })
-  observeEvent(input$clear_filter, {
-    temp2 = full_dat
-    values$predat_1 = temp2
- })
-#  createPreTab(input, output,predat)
-  callModule(Genomics_Outcome, "PRE", pre_choice1, predat)
+
+# CREATE REACTIVE DATA FRAME TO TRACK PATIENT SELECTION
+  Filtered_Pre_Data = callModule(Selection_Module, "GLOBAL", DEMO_LIST, predat)
+
+# FEED REACTIVE DATA FRAME INTO OTHER TABS AS A FUNCTION CALL
+  callModule(Genomics_Outcome, "PRE", pre_choice1, Filtered_Pre_Data)
+#  callModule(Genomics_Outcome, "PRE", pre_choice1, predat)
+
+
   createDiffTab(input, output, preondat)
   createCrossCorrTab(input, output, predat)
-  createSelectorTab(input, output, values$predat_1)
+#  createSelectorTab(input, output, values$predat_1)
 })
