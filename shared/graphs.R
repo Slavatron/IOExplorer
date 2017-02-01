@@ -123,7 +123,7 @@ Count_Data_Barplot = function(df, x, g, x_lab = x, g_lab = "Group", title = "") 
   # CREATE GGPLOT OBJECT
   p = ggplot(P_table, aes(x = Var, y = Count)) + 
     geom_bar(aes_string(x = "Var", y = "Count", fill = g_lab), position = "dodge", stat = "identity") + 
-    scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3")) +
+#    scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3")) +
     ggtitle(paste(title)) +
     xlab(paste(x_lab)) + 
     theme_minimal() +
@@ -167,7 +167,7 @@ clever_gg_boxplot = function(df, x, y, x_lab = "", y_lab = y, title = "") {
   # CREATE GGPLOT OBJECT
   p = ggplot(df, aes_string(x = x, y = y)) +
     geom_boxplot(aes_string(fill = x)) +
-    scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3")) +
+#    scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3")) +
     ggtitle(paste(title)) +
     xlab(paste(x_lab)) + 
     scale_x_discrete(labels = C_labels) +

@@ -98,7 +98,10 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
     my_obj = clever_gg_boxplot(my_data(), "myBOR", getID(), title = paste(input$Sec_Var, "vs. Response"))
     # PREPARE P-VALUE CAPTION
     pv_text = paste("Pairwise T-Test P-value =", round(my_obj[[3]]$p.value, digits = 4), "\nPairwise Wilcoxon Test P-value =", round(my_obj[[4]]$p.value, digits = 4), "\nCut-point =", input$slider_value)
-    resp_box = arrangeGrob(my_obj[[1]], sub = textGrob(pv_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)),heights=c(0.8, 0.2))
+    # HARD-CODE COLORS FOR RESPONSE PLOT
+    my_plot = my_obj[[1]] +
+      scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3"))
+    resp_box = arrangeGrob(my_plot, sub = textGrob(pv_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)),heights=c(0.8, 0.2))
     return(grid.draw(resp_box))
   })
   # PRODUCE BARPLOTS COMPARING RESPONDERS ABOVE/BELOW CUT-POINT
@@ -118,7 +121,10 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
     obj_2 = Count_Data_Barplot(temp_data, "myBOR", "Group", x_lab = input$Sec_Var, g_lab = "Response", title = "Distribution of Responders Relative to Slider Cut Point")
     # PREPARE P-VALUES TEXT
     pv_text = paste("Chi-Squared P-value =", round(obj_2[[4]], digits = 4), "\nFisher Test P-value =", round(obj_2[[6]], digits = 4), "\nCut-point =", input$slider_value)
-    resp_bar <- arrangeGrob(obj_2[[1]], sub = textGrob(pv_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)),heights=c(0.8, 0.2))
+    # HARD-CODE COLORS FOR RESPONSE PLOT
+    plot_2 = obj_2[[1]] +
+      scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3"))
+    resp_bar <- arrangeGrob(plot_2, sub = textGrob(pv_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)),heights=c(0.8, 0.2))
     return(grid.draw(resp_bar))
     
   })
