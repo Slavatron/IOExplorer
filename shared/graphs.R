@@ -98,9 +98,9 @@ Count_Data_Barplot = function(df, x, g, x_lab = x, g_lab = "Group", title = "") 
   # ENSURE ARGUMENTS ARE VALID
   if (!class(df) == "data.frame") { stop("df should be a data.frame")}
   if (!x %in% names(df)) { stop("x is not a variable in df")}
-  if (!class(df[,x]) %in% c("logical", "factor", "integer")) { stop("x should be a categorical variable")}
+  if (!class(df[,x]) %in% c("logical", "factor", "integer", "ordered")) { stop("x should be a categorical variable")}
   if (!g %in% names(df)) { stop("g is not a variable in df")}
-  if (!class(df[,g]) %in% c("logical", "factor", "integer")) { stop("g should be a categorical variable")}
+  if (!class(df[,g]) %in% c("logical", "factor", "integer", "ordered")) { stop("g should be a categorical variable")}
   # REMOVE ROWS LACKING DATA
   df = df[!is.na(df[,x]),]
   df = df[!is.na(df[,g]),]
@@ -123,6 +123,7 @@ Count_Data_Barplot = function(df, x, g, x_lab = x, g_lab = "Group", title = "") 
   # CREATE GGPLOT OBJECT
   p = ggplot(P_table, aes(x = Var, y = Count)) + 
     geom_bar(aes_string(x = "Var", y = "Count", fill = g_lab), position = "dodge", stat = "identity") + 
+    scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3")) +
     ggtitle(paste(title)) +
     xlab(paste(x_lab)) + 
     theme_minimal() +
@@ -145,9 +146,9 @@ clever_gg_boxplot = function(df, x, y, x_lab = "", y_lab = y, title = "") {
   # ENSURE ARGUMENTS ARE VALID
   if (!class(df) == "data.frame") { stop("df should be a data.frame")}
   if (!x %in% names(df)) { stop("x is not a variable in df")}
-  if (!class(df[,x]) %in% c("logical", "factor", "integer")) { stop("x should be a categorical variable")}
+  if (!class(df[,x]) %in% c("logical", "factor", "integer", "ordered")) { stop("x should be a categorical variable")}
   if (!y %in% names(df)) { stop("y is not a variable in df")}
-  if (!class(df[,y]) %in% c("numeric", "integer")) { stop("x should be a continuous variable")}
+  if (!class(df[,y]) %in% c("numeric", "integer")) { stop("y should be a continuous variable")}
   # REMOVE ROWS LACKING DATA
   df = df[!is.na(df[,x]),]
   df = df[!is.na(df[,y]),]
@@ -166,6 +167,7 @@ clever_gg_boxplot = function(df, x, y, x_lab = "", y_lab = y, title = "") {
   # CREATE GGPLOT OBJECT
   p = ggplot(df, aes_string(x = x, y = y)) +
     geom_boxplot(aes_string(fill = x)) +
+    scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3")) +
     ggtitle(paste(title)) +
     xlab(paste(x_lab)) + 
     scale_x_discrete(labels = C_labels) +

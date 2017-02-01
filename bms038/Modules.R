@@ -26,10 +26,21 @@ Genomics_OutcomeUI = function(id, choices_list) {
       h3(Subtitles_List[[id]]),
       Caption_List[[id]],
       p(),
-      uiOutput(ns("Choose_Survival_Type")),
-      p(),
-      plotOutput(ns("Survival_Plot")),
-      tableOutput(ns("my_Table"))
+      tabsetPanel(
+        tabPanel("Survival", 
+                 uiOutput(ns("Choose_Survival_Type")),
+                 p(),
+                 plotOutput(ns("Survival_Plot")),
+                 tableOutput(ns("my_Table"))
+        ),
+        tabPanel("Response",
+                 plotOutput(ns("Response_Plot")),
+                 p(),
+                 plotOutput(ns("Response_Plot_2"))
+        ),
+        tabPanel("Build Your Own Survival Model",
+                 h3("This doesn't exist yet"))
+      )
     )
   )
 }
@@ -82,6 +93,36 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
     }
     return(grid.draw(my_survival_plot))
   })
+  # PRODUCE BOXPLOT COMPARING RESPONSE GROUPS TO CONTINUOUS VARIABLE
+  output$Response_Plot = renderPlot({
+    my_obj = clever_gg_boxplot(my_data(), "myBOR", getID(), title = paste(input$Sec_Var, "vs. Response"))
+    # PREPARE P-VALUE CAPTION
+    pv_text = paste("Pairwise T-Test P-value =", round(my_obj[[3]]$p.value, digits = 4), "\nPairwise Wilcoxon Test P-value =", round(my_obj[[4]]$p.value, digits = 4), "\nCut-point =", input$slider_value)
+    resp_box = arrangeGrob(my_obj[[1]], sub = textGrob(pv_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)),heights=c(0.8, 0.2))
+    return(grid.draw(resp_box))
+  })
+  # PRODUCE BARPLOTS COMPARING RESPONDERS ABOVE/BELOW CUT-POINT
+  output$Response_Plot_2 = renderPlot({
+    my_cut = input$slider_value
+    my_var = getID()
+    #    Group_Label = as.character(input$Sec_Var)
+    temp_data = my_data()
+    temp_data$Var = temp_data[,my_var]
+    temp_data = temp_data[!is.na(temp_data$Var),]
+    
+    temp_data$Group = "Below Cutpoint"
+    temp_data[temp_data$Var >= my_cut,"Group"] = "Above Cutpoint"
+    temp_data$Group = factor(temp_data$Group)
+    
+    # PREPARE PLOT/ANALYSIS OBJECT
+    obj_2 = Count_Data_Barplot(temp_data, "myBOR", "Group", x_lab = input$Sec_Var, g_lab = "Response", title = "Distribution of Responders Relative to Slider Cut Point")
+    # PREPARE P-VALUES TEXT
+    pv_text = paste("Chi-Squared P-value =", round(obj_2[[4]], digits = 4), "\nFisher Test P-value =", round(obj_2[[6]], digits = 4), "\nCut-point =", input$slider_value)
+    resp_bar <- arrangeGrob(obj_2[[1]], sub = textGrob(pv_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)),heights=c(0.8, 0.2))
+    return(grid.draw(resp_bar))
+    
+  })
+  
   # RETURN LIST OF VALUES CREATED BY UI WIDGETS
   return(list(getID, reactive({input$genomicSpace}), reactive({input$Sec_Var})))
 }

@@ -6,6 +6,7 @@ require(GGally)
 require(grid)
 require(gridExtra)
 require(plotly)
+require(Cairo)
 
 source("key_columns.R")
 source("graphs.R")
@@ -44,7 +45,7 @@ shinyServer(function(input, output) {
 
 
 #  createDiffTab(input, output, preondat)
-  callModule(Genomics_Outcome, "PREON", diff_choice1, Filt_Preon)
+  callModule(Genomics_Outcome, "DIFF", diff_choice1, Filt_Preon)
 
  createCrossCorrTab(input, output, predat)
 #  createSelectorTab(input, output, values$predat_1)
