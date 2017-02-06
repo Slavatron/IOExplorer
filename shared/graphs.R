@@ -157,6 +157,8 @@ clever_gg_boxplot = function(df, x, y, x_lab = "", y_lab = y, title = "") {
   
   # GET SUMMARY TABLE FOR CATEGORICAL VARIABLE
   C_table = table(df[,x])
+  # DITCH ANY VALUES == 0
+  C_table = subset(C_table, C_table > 0)
   # COMBINE COUNTS AND NAMES INTO CHARACTER VECTOR
   C_names = as.character(unlist(dimnames(C_table)))
   C_nums = as.numeric(C_table)
