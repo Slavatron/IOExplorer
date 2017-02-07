@@ -15,7 +15,8 @@ Selection_ModuleUI = function(id, choices_list) {
                    checkboxGroupInput(ns("On_Exome"), "On-Treatment Exome Sequenced", choices = c("Yes" = "1", "No" = "0")),
                    checkboxGroupInput(ns("Pre_RNA"), "Pre-Treatment RNA Sequenced", choices = c("Yes" = "1", "No" = "0")),
                    checkboxGroupInput(ns("On_RNA"), "On-Treatment RNA Sequenced", choices = c("Yes" = "1", "No" = "0")),
-                   checkboxGroupInput(ns("Has_TCR"), "TCR Data Available", choices = c("Yes" = "1", "No" = "0"))
+                   checkboxGroupInput(ns("Has_TCR"), "TCR Data Available", choices = c("Yes" = "1", "No" = "0")),
+                   checkboxGroupInput(ns("Response"), "Response", choices = c("PRCR", "SD", "PD"))
                  )
     ),
     mainPanel(width = 7,
@@ -96,6 +97,9 @@ Selection_Module = function(input, output, session, choices_list, my_data) {
     }
     if (!is.null(input$Has_TCR)) {
       temp_dat = temp_dat[temp_dat$TCR_Data %in% input$Has_TCR,]
+    }
+    if (!is.null(input$Response)) {
+      temp_dat = temp_dat[temp_dat$myBOR %in% input$Response,]
     }
     return(temp_dat)
   })

@@ -16,6 +16,7 @@ source("diff_tab_logic.R")
 source("cross_tab_logic.R")
 #source("selector_tab_logic.R")
 source("Selector_Module.R")
+source("Cross_Correlation_Module.R")
 
 # READ IN FILE
 predat = read.csv("bms038_data_122016.csv")
@@ -25,6 +26,10 @@ predat$myBOR <- factor(predat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
 full_dat = predat
 half_dat = predat[1:40,]
 preondat <- read.csv("bms038_preon_122016.csv")
+# CHANGE ID COLUMN TO MATCH PREDAT
+#names(preondat)[2] = "PatientID.x"
+preondat$PatientID.x = preondat$id
+#preondat$myBOR <- factor(preondat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
 
 # DEFINE SERVER LOGIC
 shinyServer(function(input, output) {
@@ -47,6 +52,8 @@ shinyServer(function(input, output) {
 #  createDiffTab(input, output, preondat)
   callModule(Genomics_Outcome, "DIFF", diff_choice1, Filt_Preon)
 
- createCrossCorrTab(input, output, predat)
+# createCrossCorrTab(input, output, predat)
+  callModule(CrossTab, "CROSS", pre_choice1, Filtered_Pre_Data)
+  callModule(CrossTab, "CROSSDIFF", diff_choice1, Filt_Preon)
 #  createSelectorTab(input, output, values$predat_1)
 })
