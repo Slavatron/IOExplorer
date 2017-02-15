@@ -7,6 +7,9 @@ require(grid)
 require(gridExtra)
 require(plotly)
 require(Cairo)
+require(RColorBrewer)
+require(ks)
+
 
 source("key_columns.R")
 source("graphs.R")
@@ -17,6 +20,9 @@ source("cross_tab_logic.R")
 #source("selector_tab_logic.R")
 source("Selector_Module.R")
 source("Cross_Correlation_Module.R")
+source("Clonality_Graphs.R")
+source("Clonality_Module.R")
+
 
 # READ IN FILE
 predat = read.csv("bms038_data_122016.csv")
@@ -30,6 +36,13 @@ preondat <- read.csv("bms038_preon_122016.csv")
 #names(preondat)[2] = "PatientID.x"
 preondat$PatientID.x = preondat$id
 #preondat$myBOR <- factor(preondat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
+# IMPORT CLONALITY DATASET
+dd = read.table("clonality.data.table.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+# ADD CLONAL GROWTH COLUMN
+dd$Clonal_Growth = 0
+# DEFINE CLINICAL TABLE FOR CLONALITY
+clin = predat
+clin$Clonal_Growth = 0
 
 # DEFINE SERVER LOGIC
 shinyServer(function(input, output) {
@@ -56,4 +69,7 @@ shinyServer(function(input, output) {
   callModule(CrossTab, "CROSS", pre_choice1, Filtered_Pre_Data)
   callModule(CrossTab, "CROSSDIFF", diff_choice1, Filt_Preon)
 #  createSelectorTab(input, output, values$predat_1)
+  
+  callModule(Clonality, "CLONE", dd, clin)
+
 })

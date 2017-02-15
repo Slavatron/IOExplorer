@@ -9,6 +9,7 @@ source("cross_UI.R")
 #source("selector_UI.R")
 source("Selector_Module.R")
 source("Cross_Correlation_Module.R")
+source("Clonality_Module.R")
 
 options(bitmapType='cairo')
 
@@ -16,8 +17,8 @@ options(bitmapType='cairo')
 #pre_ui <- createPreTabUI()
 diff_ui <- createDiffTabUI()
 #cross_ui <- createCrossTabUI()
-cross_diff_ui <- mainPanel(headerPanel("On therapy correlations"), "This will be similiar to pre-therapy correlation tab but with differences instead")
-clone_ui <- mainPanel(h3("Tumor Clonality Analysis"), "analyze tumor clonal changes")
+#cross_diff_ui <- mainPanel(headerPanel("On therapy correlations"), "This will be similiar to pre-therapy correlation tab but with differences instead")
+#clone_ui <- mainPanel(h3("Tumor Clonality Analysis"), "analyze tumor clonal changes")
 gene_exp_ui <- mainPanel(h3("Gene expression analysis"), "Under development...")
 tcr_ui <- mainPanel(h3("TCR Analysis"), "per Jenny..")
 neoantigen_ui <- mainPanel(h3("Neo-antigen Analysis"), "per Vlad...")
@@ -52,7 +53,8 @@ ui<-navbarPage("BMS038",
                       tabPanel("Pre-therapy", Genomics_OutcomeUI("PRE", pre_choice1)),
 #                      tabPanel("Change on therapy", diff_ui)),
                       tabPanel("Change on therapy", Genomics_OutcomeUI("DIFF", diff_choice1))),
-           tabPanel("Clonality", clone_ui),
+#           tabPanel("Clonality", clone_ui),
+           tabPanel("Clonality", ClonalityUI("CLONE")),
            navbarMenu("Correlation",
 #                         tabPanel("Pre-therapy", cross_ui),
                          tabPanel("Pre-therapy", CrossTabUI("CROSS", pre_choice1)),
