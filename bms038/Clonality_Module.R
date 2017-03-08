@@ -78,9 +78,9 @@ Clonality = function(input, output, session, my_data, clin) {
   output$clone_bar = renderPlot({
 #    plot(1:10, main = paste(length(my_class)))
     if (input$bar_type == "2") {
-      make.barplot(my_data, plot.type = input$plot_type, ccf.type = input$ccf_type, threshold = input$threshold_slider, my_class = my_class, relative = T)
+      make.barplot(my_data, plot.type = input$plot_type, ccf.type = input$ccf_type, threshold = input$threshold_slider, ci = input$CI, my_class = my_class, relative = T)
     } else {
-      make.barplot(my_data, plot.type = input$plot_type, ccf.type = input$ccf_type, threshold = input$threshold_slider, my_class = my_class)
+      make.barplot(my_data, plot.type = input$plot_type, ccf.type = input$ccf_type, threshold = input$threshold_slider, ci = input$CI, my_class = my_class)
     }
     
   })

@@ -4,6 +4,8 @@ require(plotly)
 require(survival)
 require(GGally)
 require(grid)
+require(scales)
+require(DT)
 require(gridExtra)
 require(plotly)
 require(Cairo)
@@ -22,6 +24,7 @@ source("Selector_Module.R")
 source("Cross_Correlation_Module.R")
 source("Clonality_Graphs.R")
 source("Clonality_Module.R")
+source("TCR_Module.R")
 
 
 # READ IN FILE
@@ -71,5 +74,8 @@ shinyServer(function(input, output) {
 #  createSelectorTab(input, output, values$predat_1)
   
   callModule(Clonality, "CLONE", dd, clin)
+
+  callModule(TCR_Freq_Dist, "Test")
+
 
 })

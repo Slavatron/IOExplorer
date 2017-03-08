@@ -10,6 +10,7 @@ source("cross_UI.R")
 source("Selector_Module.R")
 source("Cross_Correlation_Module.R")
 source("Clonality_Module.R")
+source("TCR_Module.R")
 
 options(bitmapType='cairo')
 
@@ -20,7 +21,7 @@ diff_ui <- createDiffTabUI()
 #cross_diff_ui <- mainPanel(headerPanel("On therapy correlations"), "This will be similiar to pre-therapy correlation tab but with differences instead")
 #clone_ui <- mainPanel(h3("Tumor Clonality Analysis"), "analyze tumor clonal changes")
 gene_exp_ui <- mainPanel(h3("Gene expression analysis"), "Under development...")
-tcr_ui <- mainPanel(h3("TCR Analysis"), "per Jenny..")
+#tcr_ui <- mainPanel(h3("TCR Analysis"), "per Jenny..")
 neoantigen_ui <- mainPanel(h3("Neo-antigen Analysis"), "per Vlad...")
 #selector_ui <- createSelectorTabUI()
 #selector_ui <- mainPanel(h3("Select patients"), "Under development... select patients for analysis")
@@ -61,7 +62,7 @@ ui<-navbarPage("BMS038",
 #                         tabPanel("Change on therapy", cross_diff_ui)),
                          tabPanel("Change on therapy", CrossTabUI("CROSSDIFF", diff_choice1))),
            tabPanel("Gene Expr", gene_exp_ui),
-           tabPanel("TCR", tcr_ui),
+           tabPanel("TCR", TCR_Freq_DistUI("Test")),
            tabPanel("Neo-antigens", neoantigen_ui),
 #           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", DEMO_LIST)),
            header=hPanel
