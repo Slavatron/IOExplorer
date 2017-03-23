@@ -61,6 +61,7 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   # Note that reactive variables are functions that return a value
   # So to get this dataframe you must call it with:  getID()
   getID = reactive({
+    req(input$genomicSpace, input$Sec_Var)
     my_pos = which(choices_list[[input$genomicSpace]] == input$Sec_Var)
     tid = names(choices_list[[input$genomicSpace]])[my_pos]
     return(tid)
@@ -74,6 +75,7 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   })
   # SLIDER-CONTROLLED HISTOGRAM
   output$Cutpoint_Hist = renderPlot({
+    req(input$Sec_Var, input$slider_value)
     #    plot(1:10, main = paste(class(my_data())))
     niceHist(my_data()[,getID()], input$Sec_Var, cutpoint = input$slider_value)
   })
@@ -83,6 +85,7 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   })
   # SURVIVAL PLOT
   output$Survival_Plot = renderPlot({
+    req(input$Survival_Type, input$Sec_Var, input$slider_value)
     p_switch = input$Survival_Type
     if (p_switch == 1) {
       my_title = paste("OS by", input$Sec_Var)
