@@ -42,6 +42,7 @@ Clonality Tab:
 
 4. Make a global, reactive value for patient selection so that when people select a sample on tab, that sample can be pre-selected when they visit another tab that has individual patient selection (TCR)
 
+5. Resolve the error message the Density Plot causes, "the leading minor of order 1 is not positive definite"
 
 #############################################################
 Correlation Tab:
