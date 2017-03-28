@@ -44,6 +44,8 @@ Clonality Tab:
 
 5. Resolve the error message the Density Plot causes, "the leading minor of order 1 is not positive definite"
 
+6. Add patient selection functionality...
+
 #############################################################
 Correlation Tab:
 #############################################################
