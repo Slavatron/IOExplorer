@@ -55,7 +55,7 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   ns = session$ns
   output$Second_Choice = renderUI({
     # input/output VARIABLES MUSE BE CALLED USING ns()
-    selectInput(ns("Sec_Var"), "Feature", choices = unname(choices_list[[input$genomicSpace]]))
+    radioButtons(ns("Sec_Var"), "Feature", choices = unname(choices_list[[input$genomicSpace]]))
   })
   # GET IDENTITY OF SELECTED VARIABLE AS COLUMN-NAME IN DATAFRAME
   # Note that reactive variables are functions that return a value
