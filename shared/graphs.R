@@ -7,25 +7,26 @@
 #' @param t quoted name of column in dataframe containing survival time as a number, NOT a date
 #' @param e quoted name of column in dataframe containing censorship data as 1's and 0's
 #' @param v quoted name of column containing variable being used to predict survival; coxph p-value will be based on this value
-#' @param cut cut-point within the range of value, v; samples above and below this cut-point will be used to produce separate K-M curves and to calculate a log-rank p-value comparing the two curves
+#' @param cut1 lower cut point for separating the data into two groups
+#' @param cut2 upper cut point for separating data into two groups
 #' @param tit Title of graph (default = Survival)
 #' @param ylab name of the variable, v, to display on the y-axis (default = Survival)
 #' @param xlab label to display on the x-axis (default = "Weeks")
-#' 
 #' @return a survival plot
-clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surviving", xlabT="Weeks") {
+clever_gg_surv = function(df, t, e, v, cut1, cut2, tit="Survival", ylabT="Fraction Surviving", xlabT="Weeks") {
 
   temp_dat = df[,c(t,e,v)]
   # REMOVE NA VALUES FROM VARIABLE
   temp_dat = temp_dat[! is.na(temp_dat[,v]),]
   # DEFINE CUT-POINT AS MEDIAN IF UNDEFINED
-  if(missing(cut)) {
-    cut = median(temp_dat[,v])
-  }
+#  if(missing(cut)) {
+#    cut = median(temp_dat[,v])
+#  }
   #print("Here in gg_surv 2 (start)")
   temp_dat$Var = temp_dat[,v]
   temp_dat$Bin = 0
-  temp_dat[temp_dat$Var <= cut,]$Bin = 1
+  temp_dat[temp_dat$Var >= cut1 & temp_dat$Var <= cut2,]$Bin = 1
+#  temp_dat[temp_dat$Var <= cut2,]$Bin = 0
   
   # COUNT SAMPLES IN EACH GROUP
   n1 = sum(temp_dat$Bin)
@@ -40,8 +41,8 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
   cox_pval = summary(cox_obj)$logtest[3]
   
   pv_text <- paste( "\nLog-Rank P-value =", round(pval, digits = 3), 
-                    "\nHazard Ratio (HR) =", round(cox_pval, digits = 2),
-                    "\nCut-Point: ", cut)
+                    "\nHazard Ratio (HR) =", round(cox_pval, digits = 2))
+#                    "\nCut-Point: ", cut)
   
   print(pv_text)
 
@@ -54,7 +55,7 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
     scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0), limits=c(0,1)) +
 #    scale_colour_discrete(name = paste(v), breaks = c(0,1), labels = c(paste("Below (n =", n0, ")" ), paste("Above (n =", n1, ")"))) +
     scale_colour_manual(name = "", breaks = c(0,1), 
-                        labels = c(paste("Above (n =", n0, ")"), paste("Below (n =", n1, ")")), 
+                        labels = c(paste("Not Selected (n =", n0, ")"), paste("Selected (n =", n1, ")")), 
                         values = c("blue", "red")) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
@@ -74,11 +75,22 @@ clever_gg_surv = function(df, t, e, v, cut, tit="Survival", ylabT="Fraction Surv
 #' @param data to be plotted as histogram
 #' @param title for the plot
 #' @param cutpoint within the range of data to be displayed as a vertical line
-niceHist <- function(data, title, cutpoint) {
+niceHist <- function(data, cutpoint1, cutpoint2, title = "Supply a title, genius") {
+  temp_dat = data.frame(Data = data, Col = 0)
+  temp_dat = temp_dat[! is.na(temp_dat$Data),]
+  temp_dat[temp_dat$Data >= cutpoint1 & temp_dat$Data <= cutpoint2,]$Col = 1
+#  temp_dat$Col = as.character(temp_dat$Col)
   my_hist = qplot(data) +
     geom_histogram(fill = "forestgreen") +
-    geom_vline(xintercept = cutpoint) +
-    ggtitle(paste(title)) +
+#  my_hist = ggplot(temp_dat, aes(x = Data)) +
+#    geom_histogram() +
+#    scale_fill_manual() +
+#    scale_fill_gradientn(colours = c("red", "blue", "red"), values = c(min(data, na.rm = TRUE), cutpoint1, cutpoint2, max(data, na.rm = TRUE))) +
+#    scale_fill_manual(aes(fill = Col), values = c("0" = "red", "1" = "blue")) +
+    geom_vline(xintercept = cutpoint1) +
+    geom_vline(xintercept = cutpoint2) +
+    xlab(paste(title)) +
+#    ggtitle(paste(title)) +
     theme_minimal() +
     theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5))
   my_hist

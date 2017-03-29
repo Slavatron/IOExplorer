@@ -15,11 +15,11 @@ Genomics_OutcomeUI = function(id, choices_list) {
     sidebarPanel(    
       wellPanel(
         # input/output VARIABLES CREATED IN MODULE'S SERVER FUNCTION MUST BE ACCESSED VIA NAMESPACE OBJECT, ns()
-        selectInput(ns("genomicSpace"), "Genomic Space:", choices = names(choices_list)),
+        selectInput(ns("genomicSpace"), "Select Genomic Space:", choices = names(choices_list)),
         uiOutput(ns("Second_Choice")),
-        uiOutput(ns("Hist_Slider")),
-        plotOutput(ns("Cutpoint_Hist"))
-      )
+        uiOutput(ns("Hist_Slider"))
+      ),
+      plotOutput(ns("Cutpoint_Hist"))
     ),
     mainPanel(
       # CAPTION TEXT
@@ -55,7 +55,7 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   ns = session$ns
   output$Second_Choice = renderUI({
     # input/output VARIABLES MUSE BE CALLED USING ns()
-    radioButtons(ns("Sec_Var"), "Feature", choices = unname(choices_list[[input$genomicSpace]]))
+    radioButtons(ns("Sec_Var"), "Choose Feature", choices = unname(choices_list[[input$genomicSpace]]))
   })
   # GET IDENTITY OF SELECTED VARIABLE AS COLUMN-NAME IN DATAFRAME
   # Note that reactive variables are functions that return a value
@@ -69,15 +69,22 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   # SLIDER FOR DEFINING CUT-POINT
   output$Hist_Slider = renderUI({
     medv = median(my_data()[,getID()], na.rm = TRUE)
+    meanv = mean(my_data()[,getID()], na.rm = TRUE)
     minv = min(my_data()[,getID()], na.rm = TRUE)
     maxv = round(max(my_data()[,getID()], na.rm = TRUE), digits=3)
-    sliderInput(ns("slider_value"), label = h3(paste(input$Sec_Var)), min = minv, max = maxv, value = medv, round = -2)
+#    sliderInput(ns("slider_value"), label = h3(paste(input$Sec_Var)), min = minv, max = maxv, value = c(medv, maxv), round = -2)
+    # COMPUTE MIDDLE VALUE AND MAKE SURE ITS THE SAME AS THE MINIMUM VALUE
+    middle_val = medv
+    if (medv == minv) {
+      middle_val = meanv
+    }
+    sliderInput(ns("slider_value"), label = h4("Bisect Patients into Two Groups for Analysis"), min = minv, max = maxv, value = c(minv, middle_val), round = -2)
   })
   # SLIDER-CONTROLLED HISTOGRAM
   output$Cutpoint_Hist = renderPlot({
     req(input$Sec_Var, input$slider_value)
     #    plot(1:10, main = paste(class(my_data())))
-    niceHist(my_data()[,getID()], input$Sec_Var, cutpoint = input$slider_value)
+    niceHist(my_data()[,getID()], input$Sec_Var, cutpoint1 = input$slider_value[1], cutpoint2 = input$slider_value[2])
   })
   # RADIO BUTTON FOR SURVIVAL TYPE
   output$Choose_Survival_Type = renderUI({
@@ -89,10 +96,10 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
     p_switch = input$Survival_Type
     if (p_switch == 1) {
       my_title = paste("OS by", input$Sec_Var)
-      my_survival_plot = clever_gg_surv(my_data(), "OSWK", "OS_event", getID(), input$slider_value, my_title)
+      my_survival_plot = clever_gg_surv(my_data(), "OSWK", "OS_event", getID(), cut1 = input$slider_value[1], cut2 = input$slider_value[2], my_title)
     } else {
       my_title = paste("PFS by", input$Sec_Var)
-      my_survival_plot = clever_gg_surv(my_data(), "PFSWK", "PFS_event", getID(), input$slider_value, my_title)
+      my_survival_plot = clever_gg_surv(my_data(), "PFSWK", "PFS_event", getID(), cut1 = input$slider_value[1], cut2 = input$slider_value[2], my_title)
     }
     return(grid.draw(my_survival_plot))
   })
@@ -109,19 +116,20 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   })
   # PRODUCE BARPLOTS COMPARING RESPONDERS ABOVE/BELOW CUT-POINT
   output$Response_Plot_2 = renderPlot({
-    my_cut = input$slider_value
+    cut1 = input$slider_value[1]
+    cut2 = input$slider_value[2]
     my_var = getID()
     #    Group_Label = as.character(input$Sec_Var)
     temp_data = my_data()
     temp_data$Var = temp_data[,my_var]
     temp_data = temp_data[!is.na(temp_data$Var),]
     
-    temp_data$Group = "Below Cutpoint"
-    temp_data[temp_data$Var >= my_cut,"Group"] = "Above Cutpoint"
+    temp_data$Group = "Not Selected"
+    temp_data[temp_data$Var >= cut1 & temp_data$Var <= cut2,"Group"] = "Selected Range"
     temp_data$Group = factor(temp_data$Group)
     
     # PREPARE PLOT/ANALYSIS OBJECT
-    obj_2 = Count_Data_Barplot(temp_data, "myBOR", "Group", x_lab = input$Sec_Var, g_lab = "Response", title = "Distribution of Responders Relative to Slider Cut Point")
+    obj_2 = Count_Data_Barplot(temp_data, "myBOR", "Group", x_lab = input$Sec_Var, g_lab = "Response", title = "Distribution of Responders Relative Within Selected Range")
     # PREPARE P-VALUES TEXT
     pv_text = paste("Chi-Squared P-value =", round(obj_2[[4]], digits = 4), "\nFisher Test P-value =", round(obj_2[[6]], digits = 4), "\nCut-point =", input$slider_value)
     # HARD-CODE COLORS FOR RESPONSE PLOT
