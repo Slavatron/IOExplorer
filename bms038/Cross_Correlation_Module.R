@@ -11,7 +11,9 @@
 #' @param t - variable in df to be displayed in hover-over text
 #' @param c - variable in df to define colors; should always be "myBOR" in BMS Portal
 scatter_plotly = function(df, x, y, x_lab = x, y_lab = y, t, c) {
+  my_fit = lm(df[,y] ~ df[,x])
   s_plot = ggplot(df, aes_string(x = x, y = y, text = t, color = c)) +
+    geom_abline(intercept = my_fit$coefficients[1], slope = my_fit$coefficients[2], size = 0.25) +
     geom_point() +
     scale_colour_manual(name = "", 
                         labels = c("PRCR","SD","PD"), 
@@ -139,6 +141,7 @@ CrossTab <- function(input, output, session, choices_list, my_data) {
   
   # SCATTERPLOT 
   output$cross_Scatter_plot <- renderPlotly ({
+    req(input$cross_sec_var, input$cross_sec_var_2)
     tid_x = getID_X()
     tid_y = getID_Y()
     pdf(NULL);

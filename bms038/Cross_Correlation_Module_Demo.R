@@ -11,7 +11,11 @@ require(Cairo)
 source("key_columns.R")
 
 scatter_plotly = function(df, x, y, t, c) {
+  my_fit = lm(df[,y] ~ df[,x])
+#  my_cor = cor(df[,x], df[,y], use = "complete.obs", method = "pearson")
+  caption_text = paste("Pearson Correlation:", round(my_cor, digits = 4))
   s_plot = ggplot(df, aes_string(x = x, y = y, text = t, color = c)) +
+    geom_abline(intercept = my_fit$coefficients[1], slope = my_fit$coefficients[2]) +
     geom_point() +
     scale_colour_manual(name = "", 
                         labels = c("PRCR","SD","PD"), 
@@ -22,8 +26,11 @@ scatter_plotly = function(df, x, y, t, c) {
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5)) +
     theme(text = element_text(size = 16), axis.line.y = element_line(color = "black", size = 0.5), axis.line.x = element_line(color = "black", size = 0.5))
-  
+
+  #s_plot = arrangeGrob(s_plot, sub = textGrob(caption_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)), heights = c(0.8,0.2))
+    
   p = ggplotly(s_plot, tooltip = c("text","color","x","y"))
+#  p_out = arrangeGrob(p, sub = textGrob(caption_text, x = 0, hjust = -0.1, vjust=0.1, gp = gpar(fontface = "italic", fontsize = 14)), heights = c(0.8,0.2))
   return(p)
 #  return(s_plot)
 }
@@ -146,6 +153,7 @@ CrossTab <- function(input, output, session, choices_list, my_data) {
   
   # SCATTERPLOT
   output$cross_Scatter_plot <- renderPlotly ({
+    req(input$cross_sec_var, input$cross_sec_var_2)
 #    tid_x <- getCrossID(input$genomicSpace_X, input$cross_sec_var_2)
 #    tid_y <- getCrossID(input$genomicSpace_Y, input$cross_sec_var)  
     tid_x = getID_X()
