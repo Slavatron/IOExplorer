@@ -28,13 +28,15 @@ source("TCR_Module.R")
 
 
 # READ IN FILE
-predat = read.csv("bms038_data_122016.csv")
+#predat = read.csv("bms038_data_122016.csv")
+predat = read.csv("bms038_data_050917.csv")
 # REMOVE ON-TREATMENT SAMPLES
 predat = predat[predat$SampleType == "pre",]
 predat$myBOR <- factor(predat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
 full_dat = predat
 half_dat = predat[1:40,]
-preondat <- read.csv("bms038_preon_122016.csv")
+#preondat <- read.csv("bms038_preon_122016.csv")
+preondat = read.csv("bms038_preon_050917.csv")
 # CHANGE ID COLUMN TO MATCH PREDAT
 #names(preondat)[2] = "PatientID.x"
 preondat$PatientID.x = preondat$id
