@@ -1,4 +1,5 @@
 # MODULE: Genomics_Outcome()
+source("ForestFire.R")
 # SUMMARY:
 # Module creates the page "Genomics and Outcome" tab of the BMS038 companion website.
 # STILL TO DO:
@@ -39,10 +40,18 @@ Genomics_OutcomeUI = function(id, choices_list) {
                  plotOutput(ns("Response_Plot_2"))
         ),
         tabPanel("Build Your Own Survival Model",
-                 h3("This doesn't exist yet"))
+                 uiOutput(ns("Choose_Survival_Type_2")),
+                 checkboxGroupInput(ns("BYO_Vars"), label = h3("Blago-Blag"),
+                                    choices = list("Mutation Load" = "log10mut", 
+                                                   "Subtype" = "Subtype",
+                                                   "B.cells.naive" = "B.cells.naive",
+                                                   "B.cells.memory" = "B.cells.memory"), selected = "log10mut"),
+                 plotOutput(ns("byoForestPlot"))
+#                 plotOutput(ns("byoSurv_Plot"))
+                 )
+        )
       )
     )
-  )
 }
 # SERVER COMPONENT OF THE MODULE
 #' @param input - required for all Shiny modules
@@ -90,7 +99,22 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
   output$Choose_Survival_Type = renderUI({
     radioButtons(ns("Survival_Type"), label = "Outcome to Analyze:", choices = list("Overall Survival (OS)" = 1, "Progression Free Survival (PFS)" = 2), inline=TRUE, selected = 1)
   })
-  # SURVIVAL PLOT
+  # RADIO BUTTON FOR BUILD-YOUR-OWN SURVIVAL
+  output$Choose_Survival_Type_2 = renderUI({
+    radioButtons(ns("Survival_Type_2"), label = "Outcome to Analyze:", choices = list("Overall Survival (OS)" = "OS", "Progression Free Survival (PFS)" = "PFS"), inline=TRUE, selected = "OS")
+  })
+  # BUILD-YOUR-OWN SURVIVAL PLOT
+  output$byoForestPlot = renderPlot({
+    req(input$BYO_Vars, input$Survival_Type_2)
+    n_vars = length(input$BYO_Vars)
+    if (n_vars == 1) {
+      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = input$BYO_Vars)
+    }
+    if (n_vars > 1) {
+      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = input$BYO_Vars, input$BYO_Vars[2:length(input$BYO_Vars)])
+    }
+  })
+  # PRIMARY SURVIVAL PLOT
   output$Survival_Plot = renderPlot({
     req(input$Survival_Type, input$Sec_Var, input$slider_value)
     p_switch = input$Survival_Type

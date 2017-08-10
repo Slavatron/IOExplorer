@@ -40,7 +40,7 @@ preondat = read.csv("bms038_preon_050917.csv")
 # CHANGE ID COLUMN TO MATCH PREDAT
 #names(preondat)[2] = "PatientID.x"
 preondat$PatientID.x = preondat$id
-#preondat$myBOR <- factor(preondat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
+preondat$myBOR <- factor(preondat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
 # IMPORT CLONALITY DATASET
 dd = read.table("clonality.data.table.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 # ADD CLONAL GROWTH COLUMN
