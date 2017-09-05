@@ -41,7 +41,7 @@ Genomics_OutcomeUI = function(id, choices_list) {
         ),
         tabPanel("Build Your Own Survival Model",
                  uiOutput(ns("Choose_Survival_Type_2")),
-                 checkboxGroupInput(ns("BYO_Vars"), label = h3("Blago-Blag"),
+                 checkboxGroupInput(ns("BYO_Vars"), label = h3("Select Predictive Variables"),
                                     choices = list("Mutation Load" = "log10mut", 
                                                    "Subtype" = "Subtype",
                                                    "B.cells.naive" = "B.cells.naive",

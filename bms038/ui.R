@@ -11,6 +11,7 @@ source("Selector_Module.R")
 source("Cross_Correlation_Module.R")
 source("Clonality_Module.R")
 source("TCR_Module.R")
+source("Official_Gene_Expression_Module.R")
 
 options(bitmapType='cairo')
 
@@ -61,7 +62,8 @@ ui<-navbarPage("BMS038",
                          tabPanel("Pre-therapy", CrossTabUI("CROSS", pre_choice1)),
 #                         tabPanel("Change on therapy", cross_diff_ui)),
                          tabPanel("Change on therapy", CrossTabUI("CROSSDIFF", diff_choice1))),
-           tabPanel("Gene Expr", gene_exp_ui),
+#           tabPanel("Gene Expr", gene_exp_ui),
+	   tabPanel("Gene Expr", GeneExprUI("EXPR", pre_choice1)),	
            tabPanel("TCR", TCR_Freq_DistUI("Test")),
            tabPanel("Neo-antigens", neoantigen_ui),
 #           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", DEMO_LIST)),

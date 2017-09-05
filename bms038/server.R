@@ -30,10 +30,10 @@ source("TCR_Module.R")
 # READ IN FILE
 #predat = read.csv("bms038_data_122016.csv")
 predat = read.csv("bms038_data_050917.csv")
-# REMOVE ON-TREATMENT SAMPLES
-predat = predat[predat$SampleType == "pre",]
 predat$myBOR <- factor(predat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
 full_dat = predat
+# REMOVE ON-TREATMENT SAMPLES
+predat = predat[predat$SampleType == "pre",]
 half_dat = predat[1:40,]
 #preondat <- read.csv("bms038_preon_122016.csv")
 preondat = read.csv("bms038_preon_050917.csv")
@@ -62,6 +62,13 @@ shinyServer(function(input, output) {
     return(my_dat)
   })
 
+  Filt_Full = reactive({
+    my_samples = Filtered_Pre_Data()[,"PatientID.x"]
+    my_dat = full_dat[full_dat$PatientID.x %in% my_samples,]
+    return(my_dat)
+   
+  })
+
 # FEED REACTIVE DATA FRAME INTO OTHER TABS AS A FUNCTION CALL
   callModule(Genomics_Outcome, "PRE", pre_choice1, Filtered_Pre_Data)
 #  callModule(Genomics_Outcome, "PRE", pre_choice1, predat)
@@ -79,5 +86,6 @@ shinyServer(function(input, output) {
 
   callModule(TCR_Freq_Dist, "Test")
 
+  callModule(GeneExpr, "EXPR", pre_choice1, Filt_Full)
 
 })
