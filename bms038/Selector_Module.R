@@ -19,7 +19,7 @@ Selection_ModuleUI = function(id, choices_list) {
                    checkboxGroupInput(ns("Response"), "Response", choices = c("PRCR", "SD", "PD"))
                  )
     ),
-    mainPanel(width = 7,
+    mainPanel(width = 9,
               h3("Summary Table"),
               "Compilation of clinical and genomic data for all 73 patients in BMS-038 dataset. The set of patients included in this table can be filtered using the checkboxes on the left side of the screen. To perform analyses using a filtered subset of the full dataset you must Apply the selected filters using either the checkbox or the radiobuttons. To modify the set of datatypes displayed in this table, use the checkboxes to the right of the table; note that all datatypes are available for relevant analyses regardless of whether they are displayed in this table",
               # IF USER SELECTS ANY ROWS IN THE DISPLAY TABLE, GIVE THEM THE OPTION TO FILTER BASED ON THAT
@@ -28,38 +28,35 @@ Selection_ModuleUI = function(id, choices_list) {
               # CHECK BOX TO ALLOW FURTHER FILTRATION BY INDIVIDUAL ROWS
               # (note that this filtering mechanism might fuck up if the table has been re-ordered)
               uiOutput(ns("apply_table_filters"))),
-              #      dataTableOutput(DT::dataTableOutput(ns("table")), width = "25%")
-              #      dataTableOutput(ns("table"), width = "25%")
-              wellPanel(DT::dataTableOutput(ns("table")), style = "overflow-x:scroll; max-width: 800px; overflow-y:scroll; max-height: 600px")
-    ),
-    # CHECKBOX FOR COLUMNS TO DISPLAY
-    sidebarPanel(width = 2,
-#                 # plot used for debugging purposes
-#                 plotOutput(ns("Debug_Plot")),
-                 h3("Add Columns to the Display Table"),
-                 wellPanel(
-                   #                 plotOutput(ns("Debug_Plot")),
-                   checkboxGroupInput(ns("Display_Columns"), 
-                                      "Columns to Display", 
-                                      choices = c("NonSynMut",
-                                                  "log10mut",
-                                                  "NACnt",
-                                                  "log10na",
-                                                  "PreTreat_Exome",
-                                                  "OnTreat_Exome",
-                                                  "TCR_Data",
-                                                  "RNASeq_Pre",
-                                                  "RNASeq_On",
-                                                  "Cohort",
-                                                  "NACnt2",
-                                                  "NAFrac",
-                                                  "oncosnp_Purity",
-                                                  "oncosnp_Ploidy",
-                                                  "facets_Purity",
-                                                  "facets_Ploidy")),
-                   "This list will eventually include every variable we have, it will be organized, and it will have better names"
-                   
-                 )
+              wellPanel(DT::dataTableOutput(ns("table")), style = "overflow-x:scroll; overflow-y:scroll; max-height: 600px"),
+              # CHECKBOX FOR COLUMNS TO DISPLAY
+              h3("Add Columns to the Display Table"),
+              column(4,
+                checkboxGroupInput(ns("Display_Exome"), 
+                                   "Display Exome Data", 
+                                   choices = unname(choices_list[["Exome"]])
+                                   ),
+                checkboxGroupInput(ns("Display_RNA"), 
+                                   "Display RNASeq Data", 
+                                   choices = unname(choices_list[["RNASeq"]])
+                )
+                ),
+                column(4,
+                       checkboxGroupInput(ns("Display_TCR"), 
+                                          "Display TCR Data", 
+                                          choices = unname(choices_list[["TCR"]])
+                       ),
+                       checkboxGroupInput(ns("Display_ImmDec"), 
+                                          "Display Immune Deconvolution Data", 
+                                          choices = unname(choices_list[["Immune Deconvolution"]])
+                       )
+                ),
+                column(4,
+                  checkboxGroupInput(ns("Display_IHC"), 
+                                   "Display IHC Data", 
+                                   choices = unname(choices_list[["IHC"]])
+                                   )
+                )
     )
   )
 }
@@ -103,11 +100,42 @@ Selection_Module = function(input, output, session, choices_list, my_data) {
     }
     return(temp_dat)
   })
+  ExomeID = reactive({
+    my_pos = which(choices_list[["Exome"]] %in% input$Display_Exome)
+    tid = names(choices_list[["Exome"]])[my_pos]
+    return(tid)
+  })
+  RNAID = reactive({
+    my_pos = which(choices_list[["RNASeq"]] %in% input$Display_RNA)
+    tid = names(choices_list[["RNASeq"]])[my_pos]
+    return(tid)
+  })
+  IHCID = reactive({
+    my_pos = which(choices_list[["IHC"]] %in% input$Display_IHC)
+    tid = names(choices_list[["IHC"]])[my_pos]
+    return(tid)
+  })
+  TCRID = reactive({
+    my_pos = which(choices_list[["TCR"]] %in% input$Display_TCR)
+    tid = names(choices_list[["TCR"]])[my_pos]
+    return(tid)
+  })
+  ImmDecID = reactive({
+    my_pos = which(choices_list[["Immune Deconvolution"]] %in% input$Display_ImmDec)
+    tid = names(choices_list[["Immune Deconvolution"]])[my_pos]
+    return(tid)
+  })
   # SUBSET FILTERED TABLE'S COLUMNS FOR DISPLAY
   Display_Table = reactive({
     disp_data = filt_data()
     row.names(disp_data) = disp_data$PatientID.x
-    disp_data = disp_data[,c("Cohort", "SubtypeEZ", input$Display_Columns)]
+    extra_cols = c(ExomeID(), IHCID(), RNAID(), TCRID(), ImmDecID())
+    if (length(extra_cols) == 0 ) {
+      disp_data = disp_data[,c("Cohort", "SubtypeEZ")]
+    }
+    if (length(extra_cols) > 0) {
+      disp_data = disp_data[,c("Cohort", "SubtypeEZ", extra_cols)]
+    }
     names(disp_data)[2] = "Subtype"
     return(disp_data)
   })

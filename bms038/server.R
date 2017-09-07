@@ -53,7 +53,7 @@ clin$Clonal_Growth = 0
 shinyServer(function(input, output) {
 
 # CREATE REACTIVE DATA FRAME TO TRACK PATIENT SELECTION
-  Filtered_Pre_Data = callModule(Selection_Module, "GLOBAL", DEMO_LIST, predat)
+  Filtered_Pre_Data = callModule(Selection_Module, "GLOBAL", pre_choice1, predat)
 
 # PULL SAMPLE LIST OUT OF FILTERED DATA TO USE
   Filt_Preon = reactive({

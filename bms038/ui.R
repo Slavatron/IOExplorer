@@ -48,7 +48,7 @@ hPanel <- headerPanel(
 
 ui<-navbarPage("BMS038", 
 # PATIENT SELECTION MIGHT NEED TO BE THE FIRST TAB IF OTHER TABS USE ITS OUTPUT
-           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", DEMO_LIST)),
+           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", pre_choice1)),
 
            navbarMenu("Genomics & Outcome", 
 #                      tabPanel("Pre-therapy",pre_ui),
