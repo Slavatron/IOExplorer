@@ -14,13 +14,45 @@ TCR <- list("TCR.D90" = "D90",
             )
 
 # Need to add other signatures from Alexis here
-RNASeq <- list("cytscore" = "Cytolytic Score")
+RNASeq <- list("cytscore" = "Cytolytic Score",
+               "B.cells.naive" = "Naïve B-Cells (RNA)",
+               "B.cells.memory" = "Memory B-Cells (RNA)",
+               "Plasma.cells" = "Plasma Cells (RNA)",
+               "T.cells.CD8" = "CD8 T-Cells (RNA)",
+               "T.cells.CD4.naive" = "Naïve CD4 T-Cells (RNA)",
+               "T.cells.CD4.memory.resting" = "Resting Memory CD4 T-Cells (RNA)",
+               "T.cells.CD4.memory.activated" = "Activated Memory CD4 T-Cells (RNA)",
+               "T.cells.follicular.helper" = "Follicular Helper T-Cells (RNA)",
+               "T.cells.regulatory..Tregs." = "Regulatory T-Cells (RNA)",
+               "T.cells.gamma.delta" = "Gamma Delta T-Cells (RNA)",
+               "NK.cells.resting" = "Resting Natural Killer Cells (RNA)",
+               "NK.cells.activated" = "Activated Natural Killer Cells (RNA)",
+               "Monocytes" = "Monocytes (RNA)",
+               "Macrophages.M0" = "M0 Macrophages (RNA)",
+               "Macrophages.M1" = "M1 Macrophages (RNA)",
+               "Macrophages.M2" = "M2 Macrophages (RNA)",
+               "Dendritic.cells.resting" = "Resting Dendritic Cells (RNA)",
+               "Dendritic.cells.activated" = "Activated Dendritic Cells (RNA)",
+               "Mast.cells.resting" = "Resting Mast Cells (RNA)",
+               "Mast.cells.activated" = "Activated Mast Cells (RNA)",
+               "Eosinophils" = "Eosinophils (RNA)",
+               "Neutrophils" = "Neutrophils (RNA)",
+               "CIB.Tcell" = "T-Cells (Cibersort)",
+               "CIB.Bcell" = "B-Cells (Cibersort)",
+               "CIB.NK" = "Natural Killer Cells (Cibersort)",
+               "CIB.Mac" = "Macrophages (Cibersort)",
+               "CIB.Mast" = "Mast Cells (Cibersort)",
+               "CIB.Misc" = "Miscellaneous (Cibersort)")
 
 # Need to make sure these are exact columns that are used in paper
 ImmuneDeconvolution  <- list("T.cells.CD8" = "CD8 T-Cells",
                              "T.cells.CD4.naive" = "CD4 T-Cells",
                              "NK.cells.activated" = "NK Cells",
-                             "Macrophages.M1" = "Macrophages"
+                             "Macrophages.M1" = "Macrophages",
+                             "EST.StromalScore" = "Stromal Score (EST)",
+                             "EST.ImmuneScore"	= "Immune Infiltration (EST)",
+                             "EST.ESTIMATEScore" = "ESTIMATE Score (EST)",
+                             "EST.TumorPurity" = "Tumor Purity (EST)"
                              )
 
 IHC <- list("PDL1.1plus.pos" = "PDL1 Positive",
