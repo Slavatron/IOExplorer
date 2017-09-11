@@ -111,7 +111,7 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
       forestfire(my_data(), s_type = input$Survival_Type_2, p1 = input$BYO_Vars)
     }
     if (n_vars > 1) {
-      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = input$BYO_Vars, input$BYO_Vars[2:length(input$BYO_Vars)])
+      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = input$BYO_Vars[1], input$BYO_Vars[2:length(input$BYO_Vars)])
     }
   })
   # PRIMARY SURVIVAL PLOT

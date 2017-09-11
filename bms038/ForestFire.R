@@ -24,10 +24,27 @@ forestfire = function(df, s_type = "OS", p1, ...) {
   # COUNT NUMBER OF PATIENTS ACTUALLY USED
   n_used = nrow(temp_dat)
   # DEFINE FORMULA
-  display_formula = paste(p1, ..., sep = " + ")
-  display_formula = paste(s_type, display_formula, sep = " ~ ")
-  pred_formula = paste(p1, ..., sep = " + temp_dat$")
-  pred_formula = paste("Surv(temp_dat[,s_time], temp_dat[,s_event]) ~ temp_dat$", pred_formula, sep = "")
+  # Count arguments supplied to define formula appropriately
+  my_nargs = nargs()
+  if (my_nargs == 3) {
+#    display_formula = paste(p1, ..., sep = " + ")
+    display_formula = paste(s_type, p1, sep = " ~ ")
+#    pred_formula = paste(p1, ..., sep = " + temp_dat$")
+    pred_formula = paste("Surv(temp_dat[,s_time], temp_dat[,s_event]) ~ temp_dat$", p1, sep = "")
+  }
+  if (my_nargs > 3) {
+    display_formula = paste(..., collapse = " + ")
+    display_formula = paste(p1, display_formula, sep = " + ")
+    display_formula = paste(s_type, display_formula, sep = " ~ ")
+    pred_formula = paste(..., collapse = " + temp_dat$")
+    pred_formula = paste(p1, pred_formula, sep = " + temp_dat$")
+    pred_formula = paste("Surv(temp_dat[,s_time], temp_dat[,s_event]) ~ temp_dat$", pred_formula, sep = "")
+  }
+  print(display_formula)
+  print(my_nargs)
+  print(class(my_nargs))
+  print(pred_formula)
+  print(".....................................................")
   # FIT COX-PH MODEL
   cox_obj = coxph(as.formula(pred_formula))
   # EXTRACT HAZARD RATIO AND OTHER COEFFICIENTS 
