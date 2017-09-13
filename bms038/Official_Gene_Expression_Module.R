@@ -67,16 +67,16 @@ GeneExprUI = function(id, choices_list) {
   tagList(
     sidebarPanel(width = 3,
       tabsetPanel(
-        tabPanel("Select Genes by Typing",
-                 textInput(ns("GeneText"), label = "Type Gene Names", width = '100%'),
-                 textOutput(ns("BadFeedback"))
-                 ),
         tabPanel("Select by Genes Pathway",
 #                 selectInput(ns("Pathways"), "Pathways", choices = c(SUPP_NAMES)),
                  selectInput(ns("Pathways"), "Pathways", choices = c(Type_Names)),
                  actionButton(ns("AddGenes"), label = "Add These Genes"),
                  actionButton(ns("DitchGenes"), label = "Remove All Checked Genes"),
                  uiOutput(ns("Pathway_Boxes"))
+                 ),
+        tabPanel("Select Genes by Typing",
+                 textInput(ns("GeneText"), label = "Type Gene Names", width = '100%'),
+                 textOutput(ns("BadFeedback"))
                  ),
         tabPanel("Select Genes Alphabetically",
                  selectInput(ns("Letter"), "Alphabetical", choices = letters_vector),
@@ -278,7 +278,15 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     actionButton(ns("SaveGeneSet"), "Save Gene Set")
   })
   Saved_Gene_Sets = reactiveValues()
-  
+  Saved_GSVA_Values = reactive({
+    # Start with an empty data.frame
+    out_data = data.frame()
+    # Condense GSVA values from Saved_Gene_Sets when "SaveGeneSet" button is clicked
+    if (input$SaveGeneSet) {
+      out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) x[[4]]))
+    }
+    return(out_data)
+  })
   observeEvent(input$SaveGeneSet, {
     req(GSEA_List()) 
     new_name = GSEA_List()$Name
