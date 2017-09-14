@@ -95,14 +95,15 @@ GeneExprUI = function(id, choices_list) {
     ),
     mainPanel(width = 9,
       tabsetPanel(
-        tabPanel("Table",
+        tabPanel("Gene Selection",
           textOutput(ns("debugText")),
-          wellPanel(DT::dataTableOutput(ns("table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
+          wellPanel(DT::dataTableOutput(ns("Selection_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
 #          actionButton(ns("SaveGeneSet"), "Save Gene Set")        
           ),
         tabPanel("Aggregate Expression Value Plot",
-          uiOutput(ns("Choose_Gene_Set")),
-          tableOutput(ns("Aggregate_Values"))
+          wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
+#          uiOutput(ns("Choose_Gene_Set")),
+#          tableOutput(ns("Aggregate_Values"))
         ),
         tabPanel("Heatmap",
                  h3("Choose Heatmap Annotations"),
@@ -221,11 +222,28 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     out_dat$Mean = apply(num_dat, 1, mean)
     out_dat$Median = apply(num_dat, 1, median)
     out_dat$Standard_Deviation = apply(num_dat, 1, sd)
+    # Round down to 4 digits 
+    out_dat$Mean = round(out_dat$Mean, digits = 4)
+    out_dat$Median = round(out_dat$Median, digits = 4)
+    out_dat$Standard_Deviation = round(out_dat$Standard_Deviation, digits = 4)
     out_dat = out_dat[,c("Mean", "Median", "Standard_Deviation")]
+    # Add annotations indicating how each gene was selected
+    if (nrow(out_dat) > 0) {
+      out_dat$Selection_Method = ""
+      if (length(text_input()[[2]]) > 0) {
+        out_dat[text_input()[[2]],]$Selection_Method = "Typed"
+      }
+      if (length(myGenes$Check) > 0) {
+        out_dat[myGenes$Check,]$Selection_Method = "Pathway"
+      }
+      if (length(myAZGenes$Check) > 0) {
+        out_dat[myAZGenes$Check,]$Selection_Method = "Alphabetical"
+      }
+    }
     return(out_dat)
   })
 #### DISPLAY TABLE OF SELECTED GENES
-  output$table = DT::renderDataTable({
+  output$Selection_Table = DT::renderDataTable({
     AggGenes()},
     options=list(
       orderClasses = TRUE,
@@ -268,7 +286,7 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     rownames(scores) = gsub("Pre", "pre", rownames(scores))
     rownames(scores) = gsub("On", "on", rownames(scores))
     names(scores)[1] = set_name
-    scores$PT = rownames(scores)
+#    scores$PT = rownames(scores)
     out_list = list("Name" = set_name, "Hugo" = Hugo, "Entrez" = Entrez, "GSVA" = scores)
     return(out_list)
   })
@@ -277,13 +295,14 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     req(GSEA_List())
     actionButton(ns("SaveGeneSet"), "Save Gene Set")
   })
+  # List of GSEA_List instances; gets updated with each click of "SaveGeneSet"
   Saved_Gene_Sets = reactiveValues()
   Saved_GSVA_Values = reactive({
     # Start with an empty data.frame
     out_data = data.frame()
     # Condense GSVA values from Saved_Gene_Sets when "SaveGeneSet" button is clicked
     if (input$SaveGeneSet) {
-      out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) x[[4]]))
+      out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) as.data.frame(t(x[[4]]))))
     }
     return(out_data)
   })
@@ -297,11 +316,19 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
 #      Saved_Gene_Sets = Saved_Gene_Sets[-1]
 #    }
   })
+  output$GSVA_Table = DT::renderDataTable({
+    as.data.frame(t(Saved_GSVA_Values()))},
+#    gsva_table = as.data.frame(t(Saved_GSVA_Values()))},
+    options=list(
+      orderClasses = TRUE,
+      lengthMenu = list(
+        c(-1, 10000, 1000, 100, 10), 
+        c('All','10000', '1000', '100', '10')),
+      style="font-size:25%")
+  )
 
   output$debugText = renderText({
     req(GSEA_List())
-#    class(Saved_Gene_Sets)
-#    length(names(Saved_Gene_Sets))
     names(Saved_Gene_Sets)
   })
   
@@ -318,11 +345,6 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
 #    my_genes = my_list[[2]]
     my_table = my_list[[4]]
     my_table
-#    plot(1:10, main = paste(class(my_table)))
-#    my_table = my_list$GSVA
-#    plot(1:10, main = paste(class(my_genes)))
-#    plot(1:10, main = paste(my_genes, collapse = " & "))
-#    plot(1:10, main = paste(class(my_names)))
   })
 #### AGGREGATE VALUES TAB
   # FUNCTION FOR GETTING IDS
