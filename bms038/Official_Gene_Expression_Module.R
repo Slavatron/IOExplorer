@@ -84,23 +84,27 @@ GeneExprUI = function(id, choices_list) {
                  actionButton(ns("DitchGenes_AZ"), label = "Remove All Checked Genes"),
                  uiOutput(ns("AZ_Boxes"))
                  )
-      ),
-      p(), # NEED MORE SEPARATION HERE
+      )
+#      p(), # NEED MORE SEPARATION HERE
       
-      "Run GSVA if you want to save gene sets...",
-      textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set"),
-      actionButton(ns("RunGSVA"), "Run GSVA Analysis"),
-      uiOutput(ns("SaveGeneSet_Button"))
+#      "Run GSVA if you want to save gene sets...",
+#      textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set"),
+#      actionButton(ns("RunGSVA"), "Run GSVA Analysis"),
+#      uiOutput(ns("SaveGeneSet_Button"))
       
     ),
     mainPanel(width = 9,
       tabsetPanel(
         tabPanel("Gene Selection",
           textOutput(ns("debugText")),
+          "Run GSVA if you want to save gene sets...",
+          textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set"),
+          actionButton(ns("RunGSVA"), "Run GSVA Analysis"),
+          uiOutput(ns("SaveGeneSet_Button")),
           wellPanel(DT::dataTableOutput(ns("Selection_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
 #          actionButton(ns("SaveGeneSet"), "Save Gene Set")        
           ),
-        tabPanel("Aggregate Expression Value Plot",
+        tabPanel("View GSVA Values",
           wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
 #          uiOutput(ns("Choose_Gene_Set")),
 #          tableOutput(ns("Aggregate_Values"))
@@ -304,6 +308,7 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     if (input$SaveGeneSet) {
       out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) as.data.frame(t(x[[4]]))))
     }
+    out_data = as.data.frame(t(out_data))
     return(out_data)
   })
   observeEvent(input$SaveGeneSet, {
@@ -317,7 +322,9 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
 #    }
   })
   output$GSVA_Table = DT::renderDataTable({
-    as.data.frame(t(Saved_GSVA_Values()))},
+    req(Saved_GSVA_Values)
+    Saved_GSVA_Values()},
+#    as.data.frame(t(Saved_GSVA_Values()))},
 #    gsva_table = as.data.frame(t(Saved_GSVA_Values()))},
     options=list(
       orderClasses = TRUE,
