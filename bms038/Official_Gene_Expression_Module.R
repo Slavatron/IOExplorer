@@ -54,13 +54,26 @@ make_heatmap = function(exp_mtx, annot_mtx, title_txt = "mRNA Expression", ann_c
   }
   pheatmap(exp_mtx, main=title_txt, cluster_rows=F, show_rownames=show_gene, show_colnames=T, cluster_cols=F, annotation_col=annot_mtx, annotation_colors = ann_colors)
 }
-
+# DEFINE HEATMAP COLOR PALETTES
+ann_colors = list(
+  myBOR = c("PRCR" = "green3", "SD" = "blue", "PD" = "red"),
+  SampleType = c("on" = "yellow", "pre" = "black"),
+  SubtypeEZ = c("BRAF" = "royalblue", "RAS" = "gold", "NF1" = "black", "TripleWt" = "green"),
+  cytscore = colorRampPalette(brewer.pal(9, "Reds"))(100),
+  log10mut = colorRampPalette(brewer.pal(9, "Blues"))(100),
+  thresh.95muts = colorRampPalette(brewer.pal(9, "Greens"))(100)
+)
 
 
 ###########################################################################
 # END FUNCTIONS
 ###########################################################################
 
+
+
+###########################################################################
+# DEFINE MODULES
+###########################################################################
 
 GeneExprUI = function(id, choices_list) {
   ns = NS(id)
@@ -110,26 +123,18 @@ GeneExprUI = function(id, choices_list) {
 #          tableOutput(ns("Aggregate_Values"))
         ),
         tabPanel("Heatmap",
-                 h3("Choose Heatmap Annotations"),
-                 h2("Patients will be sorted by annotations"),
-                 selectInput(ns("First_Anno"), "First Annotation", choices = list("Response" = "myBOR",
+#                 h3("Choose Heatmap Annotations"),
+#                 h2("Patients will be sorted by annotations"),
+                 column(4,
+                 selectInput(ns("Samples_Shown"), "Samples Shown", choices = c("Pre-Treatment Only", "Pre and On", "On-Treatment Only"))),
+                 column(4,
+                 selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation"))),
+                 column(4,
+                 selectInput(ns("First_Anno"), "Annotation", choices = list("UV Signature" = "Signature.7",
        "Mutation Load (log)" = "log10mut",
-       "UV Signature" = "Signature.7",
        "Subtype" = "SubtypeEZ",
        "Clonal Mutation Load" = "thresh95.muts",
-       "Cytolytic Score" = "cytscore")),
-                 selectInput(ns("Second_Anno"), "Second Annotation", choices = list("Subtype" = "SubtypeEZ",
-         "Mutation Load (log)" = "log10mut",
-         "Response" = "myBOR",
-         "UV Signature" = "Signature.7",
-         "Clonal Mutation Load" = "thresh95.muts",
-         "Cytolytic Score" = "cytscore")),
-                 selectInput(ns("Third_Anno"), "Third Annotation", choices = list("UV Signature" = "Signature.7",
-       "Mutation Load (log)" = "log10mut",
-       "Response" = "myBOR",
-       "Subtype" = "SubtypeEZ",
-       "Clonal Mutation Load" = "thresh95.muts",
-       "Cytolytic Score" = "cytscore")),
+       "Cytolytic Score" = "cytscore"))),
           plotOutput(ns("HeatMap"))
           
         )
@@ -217,6 +222,14 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     az_genes = myAZGenes$Check
     all_genes = c(text_genes, path_genes, az_genes)
     out_df = onX[rownames(onX) %in% all_genes,]
+    return(out_df)
+  })
+  PreOnGenes = reactive({
+    text_genes = text_input()[[2]]
+    path_genes = myGenes$Check
+    az_genes = myAZGenes$Check
+    all_genes = c(text_genes, path_genes, az_genes)
+    out_df = xdat[rownames(xdat) %in% all_genes,]
     return(out_df)
   })
   # DEFINE AGGREGATE VALUES FOR SELECTED GENES
@@ -361,25 +374,6 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     return(tid)
   })
   # 
-  # CALCULATE AGGREGATE VALUE FOR BOX
-
-#  agg_df = reactive({
-#    x = make_Agg_Exp(subGenes(), input$AggMethod)
-#    return(x)
-#  })
-
-  # PRODUCE BOXPLOT USING AGGREGATE VALUE
-#  output$AggBoxPlot = renderPlot({
-#    make_Agg_boxplot(agg_df(), my_data())
-#  })
-
-#  output$AggPlot = renderPlot({
-#    temp_dat = agg_df()
-#    temp_dat = merge(temp_dat, my_data(), by = "Sample", all.x = TRUE, all.y = FALSE)
-#    plot.data(temp_dat, x = getID(), y = "AggFPKM", plot.type = "scatter plot")
-#  })
-
-  
   output$DebugPlot = renderPlot({
     dp = subGenes()
     plot(1:10, main = paste(rownames(dp)))
@@ -387,49 +381,73 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
 
 #### HEATMAP...
   output$HeatMap = renderPlot({
-    ###########################################################################
-    # HEAT MAP STUFF
-    ###########################################################################
-    # Annotation...
+    # Load data for Annotation and Expression
     heatmap_annot <- my_data()[which(my_data()$Sample %in% c(colnames(preX), colnames(onX))), ]
+    Exp_Dat = PreOnGenes()
+    if (input$Samples_Shown == "Pre-Treatment Only") {
+      heatmap_annot <- my_data()[which(my_data()$Sample %in% colnames(preX)), ]
+    }
+    if (input$Samples_Shown == "On-Treatment Only") {
+      heatmap_annot <- my_data()[which(my_data()$Sample %in% colnames(onX)), ]
+    }
     rownames(heatmap_annot) <- heatmap_annot$Sample
-    
-    # DEFINE HEATMAP COLOR PALETTES
-    ann_colors = list(
-      #  Response = c("PRCR" = "green3", "SD" = "blue", "PD" = "red")
-      myBOR = c("PRCR" = "green3", "SD" = "blue", "PD" = "red"),
-      SampleType = c("on" = "yellow", "pre" = "black"),
-      SubtypeEZ = c("BRAF" = "royalblue", "RAS" = "gold", "NF1" = "black", "TripleWt" = "green"),
-      cytscore = colorRampPalette(brewer.pal(9, "Reds"))(100),
-      log10mut = colorRampPalette(brewer.pal(9, "Blues"))(100),
-      thresh.95muts = colorRampPalette(brewer.pal(9, "Greens"))(100)
-      
-    )
-    
-    ###########################################################################
-    # END OF HEATMAP STUFF
-    ###########################################################################
-    
-    # Annotation data sorting
-    # Make sure sorting order is reversed annotation column order
-    this_ant_col <- c(input$Third_Anno, input$Second_Anno, input$First_Anno, 'SampleType')
+    # Filter Expression data to match Annotation data
+    Exp_Dat = Exp_Dat[,rownames(heatmap_annot)]
+    # Define the Annotation data.frame used for plotting 
+    this_ant_col = c(input$First_Anno, "myBOR", "SampleType")
     this_annot <- heatmap_annot[,match(this_ant_col, colnames(heatmap_annot))]
-    this_annot <- this_annot[order(this_annot[,4],this_annot[,3],this_annot[,2],this_annot[,1],decreasing=T),]
-
-    # Pre cluster pre sample set genes
-    rowclust <- hclust(dist(subGenes()))
-
+#    this_annot <- this_annot[order(this_annot[,3],this_annot[,2],this_annot[,1],decreasing=T),]
+    # Define Heatmap 
+    gene_order = c()
+    # Cluster selected genes
+    rowclust <- hclust(dist(Exp_Dat))
+    colclust <- hclust(dist(as.data.frame(t(Exp_Dat))))
+#    if (input$Samples_Shown == "Pre and On") {
+#      PreOnGenes = cbind(subGenes(),onGenes())
+#      rowclust = hclust(dist(PreOnGenes))
+#      colclust <- hclust(dist(as.data.frame(t(PreOnGenes))))
+#    }
+#    if (input$Samples_Shown == "On-Treatment Only") {
+#      rowclust <- hclust(dist(onGenes()))
+#      colclust <- hclust(dist(as.data.frame(t(onGenes()))))
+#    }
+    gene_order = rowclust$labels[rowclust$order]
+    # Sort annotation and heatmap based on input$Sorting_Method
+    sample_order = c()
+    if (input$Sorting_Method == "Hierarchical Clustering") {
+      sample_order = colclust$labels[colclust$order]
+    }
+    if (input$Sorting_Method == "Clinical Response") {
+      sample_order = rownames(this_annot[order(this_annot[,2],decreasing=T),])
+    }
+    if (input$Sorting_Method == "Annotation") {
+      sample_order = rownames(this_annot[order(this_annot[,1],decreasing=T),])
+    }
     # Pre set must be in the same col order with master set, xdat
     # order genes by cluster order; order samples by annotation order 
-    gene_order = rowclust$labels[rowclust$order]
-    sample_order = match(rownames(this_annot), colnames(xdat))
+#    gene_order = rowclust$labels[rowclust$order]
+#    sample_order = match(rownames(this_annot), colnames(xdat))
     this_xdat <- xdat[gene_order, sample_order]
-#    this_xdat <- xdat[rowclust$labels[order(rowclust$order)], match(rownames(this_annot), colnames(xdat))]
-    
     this_xdat = t(scale(t(this_xdat)))
-    
-    # HeatMap
+    # Make sure sorting order is reversed annotation column order
 
-    make_heatmap(this_xdat, this_annot, 'Pre-On Treatment Sample Gene Expression', ann_colors)
-  }, width = 1000, height = 1000, res = 90)  }
+#    # Pre cluster pre sample set genes
+#    rowclust <- hclust(dist(subGenes()))
+#    # Pre set must be in the same col order with master set, xdat
+#    # order genes by cluster order; order samples by annotation order 
+#    gene_order = rowclust$labels[rowclust$order]
+#    sample_order = match(rownames(this_annot), colnames(xdat))
+#    this_xdat <- xdat[gene_order, sample_order]
+#    this_xdat = t(scale(t(this_xdat)))
+    # HeatMap
+#    j = names(this_annot)
+    j = dim(my_data())
+#    j = dim(onGenes())
+    j = paste(j, collapse = ";")
+    make_heatmap(this_xdat, this_annot, j, ann_colors)
+#    make_heatmap(this_xdat, this_annot, 'Pre-On Treatment Sample Gene Expression', ann_colors)
+  }, width = 1000, height = 1000, res = 90)  
+  # RETURN REACTIVE VALUE FOR USE BY OTHER MODULES
+  return(Saved_Gene_Sets)
+}
 

@@ -34,13 +34,19 @@ predat$myBOR <- factor(predat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
 full_dat = predat
 # REMOVE ON-TREATMENT SAMPLES
 predat = predat[predat$SampleType == "pre",]
-half_dat = predat[1:40,]
+####    ####   ####    ####    ####    ####    ####    ####    ####    ####    ####
+# Create special data.frame that contains all pre samples plus "only-on" samples
+on_only_names = setdiff(full_dat$PatientID.x,predat$PatientID.x)
+on_only_dat = rbind(predat,full_dat[full_dat$PatientID.x %in% on_only_names,])
+####    ####    ####    ####    ####    ####    ####    ####    ####    ####    ####
+#half_dat = predat[1:40,]
 #preondat <- read.csv("bms038_preon_122016.csv")
 preondat = read.csv("bms038_preon_050917.csv")
 # CHANGE ID COLUMN TO MATCH PREDAT
 #names(preondat)[2] = "PatientID.x"
 preondat$PatientID.x = preondat$id
 preondat$myBOR <- factor(preondat$myBOR, levels=c("PRCR","SD","PD"), ordered = TRUE)
+preondat$Sample = paste(preondat$PatientID.x, "on", sep="_")
 # IMPORT CLONALITY DATASET
 dd = read.table("clonality.data.table.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 # ADD CLONAL GROWTH COLUMN
@@ -53,8 +59,14 @@ clin$Clonal_Growth = 0
 shinyServer(function(input, output) {
 
 # CREATE REACTIVE DATA FRAME TO TRACK PATIENT SELECTION
-  Filtered_Pre_Data = callModule(Selection_Module, "GLOBAL", pre_choice1, predat)
-
+  ####    ####    ####    ####    ####    ####    ####    ####    ####    ####    ####
+#  Filtered_Pre_Data = callModule(Selection_Module, "GLOBAL", pre_choice1, predat)
+  Filtered_Data = callModule(Selection_Module, "GLOBAL", pre_choice1, on_only_dat)
+  Filtered_Pre_Data = reactive({
+    my_dat = Filtered_Data()
+    my_dat = my_dat[my_dat$SampleType == "pre",]
+  })
+  ####    ####    ####    ####    ####    ####    ####    ####    ####    ####    ####
 # PULL SAMPLE LIST OUT OF FILTERED DATA TO USE
   Filt_Preon = reactive({
     my_samples = Filtered_Pre_Data()[,"PatientID.x"]
@@ -63,19 +75,22 @@ shinyServer(function(input, output) {
   })
 
   Filt_Full = reactive({
-    my_samples = Filtered_Pre_Data()[,"PatientID.x"]
+#    my_samples = Filtered_Pre_Data()[,"PatientID.x"]
+    ####    ####    ####    ####    ####    ####    ####
+    my_samples = Filtered_Data()[,"PatientID.x"]
+    ####    ####    ####    ####    ####    ####    ####
     my_dat = full_dat[full_dat$PatientID.x %in% my_samples,]
     return(my_dat)
    
   })
 
 # FEED REACTIVE DATA FRAME INTO OTHER TABS AS A FUNCTION CALL
-  callModule(Genomics_Outcome, "PRE", pre_choice1, Filtered_Pre_Data)
+  callModule(Genomics_Outcome, "PRE", pre_choice1, Filtered_Pre_Data, myGSVA)
 #  callModule(Genomics_Outcome, "PRE", pre_choice1, predat)
 
 
 #  createDiffTab(input, output, preondat)
-  callModule(Genomics_Outcome, "DIFF", diff_choice1, Filt_Preon)
+  callModule(Genomics_Outcome, "DIFF", diff_choice1, Filt_Preon, myGSVA)
 
 # createCrossCorrTab(input, output, predat)
   callModule(CrossTab, "CROSS", pre_choice1, Filtered_Pre_Data)
@@ -86,6 +101,6 @@ shinyServer(function(input, output) {
 
   callModule(TCR_Freq_Dist, "Test")
 
-  callModule(GeneExpr, "EXPR", pre_choice1, Filt_Full)
+  myGSVA = callModule(GeneExpr, "EXPR", pre_choice1, Filt_Full)
 
 })

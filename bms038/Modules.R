@@ -7,8 +7,8 @@ source("ForestFire.R")
 # - implement patient-selection functionality
 # UI COMPONENT OF THE Genomics_Outcome MODULE
 #' @param id - namespace identifier for communication between module's UI and server elements
-#' @param choices_list - list of lists formatted like what's in key_columns.R
-Genomics_OutcomeUI = function(id, choices_list) {
+#' @param choices_list_raw - list of lists formatted like what's in key_columns.R
+Genomics_OutcomeUI = function(id, choices_list_raw) {
   # DEFINE NAMESPACE TO DISTINGUISH INDIVIDUAL FUNCTION CALLS
   ns = NS(id)
   # USE tagList TO RETURN MULTIPLE UI ELEMENTS
@@ -16,7 +16,8 @@ Genomics_OutcomeUI = function(id, choices_list) {
     sidebarPanel(    
       wellPanel(
         # input/output VARIABLES CREATED IN MODULE'S SERVER FUNCTION MUST BE ACCESSED VIA NAMESPACE OBJECT, ns()
-        selectInput(ns("genomicSpace"), "Select Genomic Space:", choices = names(choices_list)),
+#        selectInput(ns("genomicSpace"), "Select Genomic Space:", choices = names(choices_list_raw)),
+        uiOutput(ns("First_Choice")),
         uiOutput(ns("Second_Choice")),
         uiOutput(ns("Hist_Slider"))
       ),
@@ -29,6 +30,7 @@ Genomics_OutcomeUI = function(id, choices_list) {
       p(),
       tabsetPanel(
         tabPanel("Survival", 
+                 textOutput(ns("debug_Text")),
                  uiOutput(ns("Choose_Survival_Type")),
                  p(),
                  plotOutput(ns("Survival_Plot")),
@@ -58,21 +60,66 @@ Genomics_OutcomeUI = function(id, choices_list) {
 #' @param output - required for all Shiny modules
 #' @param session - required for all Shiny modules
 #' @param choices_list - list of lists formatted like what's in key_columns.R
-#' @param my_data - dataframe containing all data used in module
-Genomics_Outcome = function(input, output, session, choices_list, my_data) {
+#' @param my_data_raw - dataframe containing all data used in module
+#' @param my_gsva - reactive value containing results from user-run GSVA analyses
+Genomics_Outcome = function(input, output, session, choices_list_raw, my_data_raw, my_gsva) {
   # DEFINE NAMESPACE OBJECT FROM session OBJECT 
   ns = session$ns
+  # RE-DEFINE REACTIVE INPUTS SO THEY CAN BE MODIFIED IF GSVA VALUES GET INTRODUCED
+  Saved_GSVA_Values = reactive({
+    # Start with an empty data.frame
+    out_data = data.frame()
+    # Condense GSVA values from my_gsva when there are named entries in it
+    if (names(my_gsva) > 0) {
+      out_data = do.call("rbind", lapply(reactiveValuesToList(my_gsva), function(x) as.data.frame(t(x[[4]]))))
+    }
+    out_data = as.data.frame(t(out_data))
+    return(out_data)
+  })
+  choices_list = reactive({
+    out_list = choices_list_raw
+    if (length(names(my_gsva)) > 0) {
+      # Define new list of variables based on Saved_GSVA_Values
+      new_vals = names(Saved_GSVA_Values())
+      new_list = list(new_vals)
+      names(new_list[[1]]) = new_vals
+      # Append choices_list with these values
+      list_pos = length(out_list)+1
+      out_list[[list_pos]] = unlist(new_list)
+      names(out_list)[list_pos] = "User-Defined GSVA"
+    }
+    return(out_list)
+  })
+  my_data = reactive({
+    out_data = my_data_raw()
+    if (length(names(my_gsva)) > 0) {
+      gsva_data = Saved_GSVA_Values()
+      # check column names...
+      gsva_data$Sample = rownames(gsva_data)
+      out_data = merge(out_data, gsva_data, by = "Sample")
+    }
+    return(out_data)
+  })
+  output$debug_Text = renderText({
+    huh = names(my_gsva)
+    length(huh)
+#    class(Saved_GSVA_Values())
+  })
+  output$First_Choice = renderUI({
+    selectInput(ns("genomicSpace"), "Select Genomic Space:", choices = names(choices_list()))
+  })
   output$Second_Choice = renderUI({
+    req(input$genomicSpace)
     # input/output VARIABLES MUSE BE CALLED USING ns()
-    radioButtons(ns("Sec_Var"), "Choose Feature", choices = unname(choices_list[[input$genomicSpace]]))
+    radioButtons(ns("Sec_Var"), "Choose Feature", choices = unname(choices_list()[[input$genomicSpace]]))
   })
   # GET IDENTITY OF SELECTED VARIABLE AS COLUMN-NAME IN DATAFRAME
   # Note that reactive variables are functions that return a value
   # So to get this dataframe you must call it with:  getID()
   getID = reactive({
     req(input$genomicSpace, input$Sec_Var)
-    my_pos = which(choices_list[[input$genomicSpace]] == input$Sec_Var)
-    tid = names(choices_list[[input$genomicSpace]])[my_pos]
+    my_pos = which(choices_list()[[input$genomicSpace]] == input$Sec_Var)
+    tid = names(choices_list()[[input$genomicSpace]])[my_pos]
     return(tid)
   })
   # SLIDER FOR DEFINING CUT-POINT
@@ -87,7 +134,7 @@ Genomics_Outcome = function(input, output, session, choices_list, my_data) {
     if (medv == minv) {
       middle_val = meanv
     }
-    sliderInput(ns("slider_value"), label = h4("Bisect Patients into Two Groups for Analysis"), min = minv, max = maxv, value = c(minv, middle_val), round = -2)
+    sliderInput(ns("slider_value"), label = h4("Bisect Patients into Two Groups for Analysis"), min = minv, max = maxv, value = c(minv, middle_val), round = -5)
   })
   # SLIDER-CONTROLLED HISTOGRAM
   output$Cutpoint_Hist = renderPlot({
