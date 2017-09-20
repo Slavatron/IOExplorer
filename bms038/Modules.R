@@ -43,11 +43,39 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
         ),
         tabPanel("Build Your Own Survival Model",
                  uiOutput(ns("Choose_Survival_Type_2")),
-                 checkboxGroupInput(ns("BYO_Vars"), label = h3("Select Predictive Variables"),
-                                    choices = list("Mutation Load" = "log10mut", 
-                                                   "Subtype" = "Subtype",
-                                                   "B.cells.naive" = "B.cells.naive",
-                                                   "B.cells.memory" = "B.cells.memory"), selected = "log10mut"),
+#                 uiOutput(ns("Choose_BYO_Vars")),
+                 column(4,
+                        checkboxGroupInput(ns("Display_Exome"), 
+                                           "Exome Variables", 
+                                           choices = unname(choices_list_raw[["Exome"]])
+                        ),
+                        checkboxGroupInput(ns("Display_RNA"), 
+                                           "RNASeq Variables", 
+                                           choices = unname(choices_list_raw[["RNASeq"]])
+                        )
+                 ),
+                 column(4,
+                        checkboxGroupInput(ns("Display_TCR"), 
+                                           "TCR Variables", 
+                                           choices = unname(choices_list_raw[["TCR"]])
+                        ),
+                        checkboxGroupInput(ns("Display_ImmDec"), 
+                                           "Immune Deconvolution Variables", 
+                                           choices = unname(choices_list_raw[["Immune Deconvolution"]])
+                        )
+                 ),
+                 column(4,
+                        checkboxGroupInput(ns("Display_IHC"), 
+                                           "IHC Variables", 
+                                           choices = unname(choices_list_raw[["IHC"]])
+                        )
+                 ),
+                        
+#                 checkboxGroupInput(ns("BYO_Vars"), label = h3("Select Predictive Variables"),
+#                                    choices = list("Mutation Load" = "log10mut", 
+#                                                   "Subtype" = "Subtype",
+#                                                   "B.cells.naive" = "B.cells.naive",
+#                                                   "B.cells.memory" = "B.cells.memory"), selected = "log10mut"),
                  plotOutput(ns("byoForestPlot"))
 #                 plotOutput(ns("byoSurv_Plot"))
                  )
@@ -150,15 +178,46 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, my_data_ra
   output$Choose_Survival_Type_2 = renderUI({
     radioButtons(ns("Survival_Type_2"), label = "Outcome to Analyze:", choices = list("Overall Survival (OS)" = "OS", "Progression Free Survival (PFS)" = "PFS"), inline=TRUE, selected = "OS")
   })
+  # CONDENSE VARIABLES INTO MODEL
+  ExomeID = reactive({
+    my_pos = which(choices_list()[["Exome"]] %in% input$Display_Exome)
+    tid = names(choices_list()[["Exome"]])[my_pos]
+    return(tid)
+  })
+  RNAID = reactive({
+    my_pos = which(choices_list()[["RNASeq"]] %in% input$Display_RNA)
+    tid = names(choices_list()[["RNASeq"]])[my_pos]
+    return(tid)
+  })
+  IHCID = reactive({
+    my_pos = which(choices_list()[["IHC"]] %in% input$Display_IHC)
+    tid = names(choices_list()[["IHC"]])[my_pos]
+    return(tid)
+  })
+  TCRID = reactive({
+    my_pos = which(choices_list()[["TCR"]] %in% input$Display_TCR)
+    tid = names(choices_list()[["TCR"]])[my_pos]
+    return(tid)
+  })
+  ImmDecID = reactive({
+    my_pos = which(choices_list()[["Immune Deconvolution"]] %in% input$Display_ImmDec)
+    tid = names(choices_list()[["Immune Deconvolution"]])[my_pos]
+    return(tid)
+  })
+  BYO_Vars = reactive({
+    extra_cols = c(getID(),ExomeID(), IHCID(), RNAID(), TCRID(), ImmDecID())
+    extra_cols = unique(extra_cols)
+  })
   # BUILD-YOUR-OWN SURVIVAL PLOT
   output$byoForestPlot = renderPlot({
-    req(input$BYO_Vars, input$Survival_Type_2)
-    n_vars = length(input$BYO_Vars)
+#    req(input$BYO_Vars, input$Survival_Type_2)
+    req(BYO_Vars(), input$Survival_Type_2)
+    n_vars = length(BYO_Vars())
     if (n_vars == 1) {
-      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = input$BYO_Vars)
+      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = BYO_Vars())
     }
     if (n_vars > 1) {
-      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = input$BYO_Vars[1], input$BYO_Vars[2:length(input$BYO_Vars)])
+      forestfire(my_data(), s_type = input$Survival_Type_2, p1 = BYO_Vars()[1], BYO_Vars()[2:length(BYO_Vars())])
     }
   })
   # PRIMARY SURVIVAL PLOT

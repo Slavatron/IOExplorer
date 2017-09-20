@@ -125,16 +125,18 @@ GeneExprUI = function(id, choices_list) {
         tabPanel("Heatmap",
 #                 h3("Choose Heatmap Annotations"),
 #                 h2("Patients will be sorted by annotations"),
-                 column(4,
+                 column(3,
                  selectInput(ns("Samples_Shown"), "Samples Shown", choices = c("Pre-Treatment Only", "Pre and On", "On-Treatment Only"))),
-                 column(4,
-                 selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation"))),
-                 column(4,
-                 selectInput(ns("First_Anno"), "Annotation", choices = list("UV Signature" = "Signature.7",
+                 column(3,
+                 selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation A", "Annotation B"))),
+                 column(3,
+                 selectInput(ns("Anno_A"), "Annotation A", choices = list("UV Signature" = "Signature.7",
        "Mutation Load (log)" = "log10mut",
        "Subtype" = "SubtypeEZ",
        "Clonal Mutation Load" = "thresh95.muts",
        "Cytolytic Score" = "cytscore"))),
+                  column(3,
+                  selectInput(ns("Anno_B"), "Annotation B:", choices = list("None" = "None", "Subtype" = "SubtypeEZ", "Clonal Mutation Load" = "thresh95.muts"))),
           plotOutput(ns("HeatMap"))
           
         )
@@ -394,7 +396,10 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     # Filter Expression data to match Annotation data
     Exp_Dat = Exp_Dat[,rownames(heatmap_annot)]
     # Define the Annotation data.frame used for plotting 
-    this_ant_col = c(input$First_Anno, "myBOR", "SampleType")
+    this_ant_col = c(input$Anno_A, "myBOR", "SampleType")
+    if (input$Anno_B != "None") {
+      this_ant_col = c(input$Anno_B, input$Anno_A, "myBOR", "SampleType")
+    }
     this_annot <- heatmap_annot[,match(this_ant_col, colnames(heatmap_annot))]
 #    this_annot <- this_annot[order(this_annot[,3],this_annot[,2],this_annot[,1],decreasing=T),]
     # Define Heatmap 
@@ -418,10 +423,13 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
       sample_order = colclust$labels[colclust$order]
     }
     if (input$Sorting_Method == "Clinical Response") {
-      sample_order = rownames(this_annot[order(this_annot[,2],decreasing=T),])
+      sample_order = rownames(this_annot[order(this_annot$SampleType, this_annot$myBOR, decreasing=T),])
     }
-    if (input$Sorting_Method == "Annotation") {
-      sample_order = rownames(this_annot[order(this_annot[,1],decreasing=T),])
+    if (input$Sorting_Method == "Annotation A") {
+      sample_order = rownames(this_annot[order(this_annot[,input$Anno_A], this_annot$SampleType, decreasing=T),])
+    }
+    if (input$Sorting_Method == "Annotation B") {
+      sample_order = rownames(this_annot[order(this_annot[,input$Anno_B],this_annot$SampleType,decreasing=T),])
     }
     # Pre set must be in the same col order with master set, xdat
     # order genes by cluster order; order samples by annotation order 
@@ -444,9 +452,9 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     j = dim(my_data())
 #    j = dim(onGenes())
     j = paste(j, collapse = ";")
-    make_heatmap(this_xdat, this_annot, j, ann_colors)
-#    make_heatmap(this_xdat, this_annot, 'Pre-On Treatment Sample Gene Expression', ann_colors)
-  }, width = 1000, height = 1000, res = 90)  
+#    make_heatmap(this_xdat, this_annot, j, ann_colors)
+    make_heatmap(this_xdat, this_annot, 'Gene Expression', ann_colors)
+  }, width = 1000, height = 800, res = 90)  
   # RETURN REACTIVE VALUE FOR USE BY OTHER MODULES
   return(Saved_Gene_Sets)
 }
