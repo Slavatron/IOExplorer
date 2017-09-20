@@ -79,33 +79,22 @@ GeneExprUI = function(id, choices_list) {
   ns = NS(id)
   tagList(
     sidebarPanel(width = 3,
-      tabsetPanel(
-        tabPanel("Select by Genes Pathway",
-#                 selectInput(ns("Pathways"), "Pathways", choices = c(SUPP_NAMES)),
-                 selectInput(ns("Pathways"), "Pathways", choices = c(Type_Names)),
-                 actionButton(ns("AddGenes"), label = "Add These Genes"),
-                 actionButton(ns("DitchGenes"), label = "Remove All Checked Genes"),
-                 uiOutput(ns("Pathway_Boxes"))
-                 ),
-        tabPanel("Select Genes by Typing",
-                 textInput(ns("GeneText"), label = "Type Gene Names", width = '100%'),
-                 textOutput(ns("BadFeedback"))
-                 ),
-        tabPanel("Select Genes Alphabetically",
-                 selectInput(ns("Letter"), "Alphabetical", choices = letters_vector),
-                 actionButton(ns("AddGenes_AZ"), label = "Add These Genes"),
-                 actionButton(ns("DitchGenes_AZ"), label = "Remove All Checked Genes"),
-                 uiOutput(ns("AZ_Boxes"))
-                 )
-      )
-#      p(), # NEED MORE SEPARATION HERE
-      
-#      "Run GSVA if you want to save gene sets...",
-#      textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set"),
-#      actionButton(ns("RunGSVA"), "Run GSVA Analysis"),
-#      uiOutput(ns("SaveGeneSet_Button"))
-      
-    ),
+        "Select Genes by Typing",
+        textInput(ns("GeneText"), label = "Type Gene Names", width = '100%'),
+        textOutput(ns("BadFeedback")),
+        "Select by Genes Pathway",
+        selectInput(ns("Pathways"), "Pathways", choices = c(Type_Names)),
+        actionButton(ns("AddGenes"), label = "Add These Genes"),
+        actionButton(ns("DitchGenes"), label = "Remove All Checked Genes"),
+        uiOutput(ns("Pathway_Boxes"))
+
+#        tabPanel("Select Genes Alphabetically",
+#                 selectInput(ns("Letter"), "Alphabetical", choices = letters_vector),
+#                 actionButton(ns("AddGenes_AZ"), label = "Add These Genes"),
+#                 actionButton(ns("DitchGenes_AZ"), label = "Remove All Checked Genes"),
+#                 uiOutput(ns("AZ_Boxes"))
+#                 )
+      ),
     mainPanel(width = 9,
       tabsetPanel(
         tabPanel("Gene Selection",
@@ -167,31 +156,6 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     }
     return(message)
   })
-  #### PROCESS INPUT BASED ON ALPHABETICAL SELECTION
-  # Reactive Object listing all genes for a given letter
-  AZ_Gene_Vector = reactive({
-    my_cols = grep("^\\d", rownames(preX))
-    if (input$Letter != "Numeric") {
-      my_pat = paste("^", input$Letter, sep = "")
-      my_cols = grep(my_pat, rownames(preX))
-    }
-    my_vect = sort(rownames(preX)[my_cols])
-    return(my_vect)
-  })
-  # Dynamic UI for selecting genes in a particular pathway
-  output$AZ_Boxes = renderUI({
-    checkboxGroupInput(ns("Chosen_AZ_Genes"), "Genes", choices = AZ_Gene_Vector())
-  })
-  # Create reactive value for genes selected from alphabetical checkboxes
-  myAZGenes = reactiveValues(
-    Check = c()
-  )
-  observeEvent(input$AddGenes_AZ, {
-    myAZGenes$Check = c(myAZGenes$Check, input$Chosen_AZ_Genes)
-  })
-  observeEvent(input$DitchGenes_AZ, {
-    myAZGenes$Check = c()
-  })
 #### PROCESS INPUT BASED ON PATHWAYS
   # Dynamic UI for selecting genes in a particular pathway
   output$Pathway_Boxes = renderUI({
@@ -213,24 +177,21 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
   subGenes = reactive({
     text_genes = text_input()[[2]]
     path_genes = myGenes$Check
-    az_genes = myAZGenes$Check
-    all_genes = c(text_genes, path_genes, az_genes)
+    all_genes = c(text_genes, path_genes)
     out_df = preX[rownames(preX) %in% all_genes,]
     return(out_df)
   })
   onGenes = reactive({
     text_genes = text_input()[[2]]
     path_genes = myGenes$Check
-    az_genes = myAZGenes$Check
-    all_genes = c(text_genes, path_genes, az_genes)
+    all_genes = c(text_genes, path_genes)
     out_df = onX[rownames(onX) %in% all_genes,]
     return(out_df)
   })
   PreOnGenes = reactive({
     text_genes = text_input()[[2]]
     path_genes = myGenes$Check
-    az_genes = myAZGenes$Check
-    all_genes = c(text_genes, path_genes, az_genes)
+    all_genes = c(text_genes, path_genes)
     out_df = xdat[rownames(xdat) %in% all_genes,]
     return(out_df)
   })
@@ -254,9 +215,6 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
       }
       if (length(myGenes$Check) > 0) {
         out_dat[myGenes$Check,]$Selection_Method = "Pathway"
-      }
-      if (length(myAZGenes$Check) > 0) {
-        out_dat[myAZGenes$Check,]$Selection_Method = "Alphabetical"
       }
     }
     return(out_dat)
