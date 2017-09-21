@@ -33,8 +33,8 @@ preX = xdat[,-ons]
 pres = grep("_pre", names(xdat))
 onX = xdat[,-pres]
 
-# VECTOR FOR ALPHABETICAL SELECTION
-letters_vector = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Numeric")
+cytdf = read.csv("bms038_data_050917.csv")
+cytdf = cytdf[cytdf$Sample %in% names(xdat),c("Sample", "cytscore")]
 
 
 
@@ -79,38 +79,32 @@ GeneExprUI = function(id, choices_list) {
   ns = NS(id)
   tagList(
     sidebarPanel(width = 3,
-        "Select Genes by Typing",
-        textInput(ns("GeneText"), label = "Type Gene Names", width = '100%'),
+        h3("Gene Selection"),
+        textInput(ns("GeneText"), label = "Input Genes as Text", width = '100%'),
         textOutput(ns("BadFeedback")),
-        "Select by Genes Pathway",
-        selectInput(ns("Pathways"), "Pathways", choices = c(Type_Names)),
+        selectInput(ns("Pathways"), "Select Genes by Pathway", choices = c(Type_Names)),
         actionButton(ns("AddGenes"), label = "Add These Genes"),
         actionButton(ns("DitchGenes"), label = "Remove All Checked Genes"),
         uiOutput(ns("Pathway_Boxes"))
-
-#        tabPanel("Select Genes Alphabetically",
-#                 selectInput(ns("Letter"), "Alphabetical", choices = letters_vector),
-#                 actionButton(ns("AddGenes_AZ"), label = "Add These Genes"),
-#                 actionButton(ns("DitchGenes_AZ"), label = "Remove All Checked Genes"),
-#                 uiOutput(ns("AZ_Boxes"))
-#                 )
       ),
     mainPanel(width = 9,
       tabsetPanel(
         tabPanel("Gene Selection",
           textOutput(ns("debugText")),
-          "Run GSVA if you want to save gene sets...",
-          textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set"),
-          actionButton(ns("RunGSVA"), "Run GSVA Analysis"),
-          uiOutput(ns("SaveGeneSet_Button")),
-          wellPanel(DT::dataTableOutput(ns("Selection_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
+          fluidRow(
+            column(6,textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set")),
+            column(6,
+#                   "Run GSVA if you want to save gene sets...",
+                   actionButton(ns("RunGSVA"), "Run GSVA Analysis and Save"))
+          ),
+#          br(),
+          column(6,wellPanel(DT::dataTableOutput(ns("Selection_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")),
+          column(6,wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px"))
 #          actionButton(ns("SaveGeneSet"), "Save Gene Set")        
           ),
-        tabPanel("View GSVA Values",
-          wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
-#          uiOutput(ns("Choose_Gene_Set")),
-#          tableOutput(ns("Aggregate_Values"))
-        ),
+#        tabPanel("View GSVA Values",
+#          wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
+#        ),
         tabPanel("Heatmap",
 #                 h3("Choose Heatmap Annotations"),
 #                 h2("Patients will be sorted by annotations"),
@@ -277,14 +271,30 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
   Saved_GSVA_Values = reactive({
     # Start with an empty data.frame
     out_data = data.frame()
+    cyt_data = cytdf
+    names(cyt_data) = c("Sample", "Cytolytic_Score")
+#    cyt_data = as.data.frame(cytdf$cytscore)
+#    rownames(cyt_data) = cytdf$Sample
+#    names(cyt_data) = "Cytolytic_Score"
+    
+    
     # Condense GSVA values from Saved_Gene_Sets when "SaveGeneSet" button is clicked
-    if (input$SaveGeneSet) {
+    if (input$RunGSVA) {
       out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) as.data.frame(t(x[[4]]))))
+      out_data = as.data.frame(t(out_data))
+      out_data$Sample = rownames(out_data)
+      cyt_data = merge(cyt_data, out_data, by = "Sample")
     }
-    out_data = as.data.frame(t(out_data))
-    return(out_data)
+#    out_data = as.data.frame(t(out_data))
+    rownames(cyt_data) = cyt_data$Sample
+    cyt_data = as.data.frame(cyt_data[,-1])
+    if (ncol(cyt_data) == 1) {
+      names(cyt_data) = "Cytolytic_Score"
+      rownames(cyt_data) = cytdf$Sample
+    }
+    return(cyt_data)
   })
-  observeEvent(input$SaveGeneSet, {
+  observeEvent(input$RunGSVA, {
     req(GSEA_List()) 
     new_name = GSEA_List()$Name
 #    Saved_Gene_Sets[[new_name]] = isolate(GSEA_List)
