@@ -1,5 +1,6 @@
 # MODULE: Genomics_Outcome()
 source("ForestFire.R")
+source("ApplyRemoveModule.R")
 # SUMMARY:
 # Module creates the page "Genomics and Outcome" tab of the BMS038 companion website.
 # STILL TO DO:
@@ -17,6 +18,7 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
       wellPanel(
         # input/output VARIABLES CREATED IN MODULE'S SERVER FUNCTION MUST BE ACCESSED VIA NAMESPACE OBJECT, ns()
 #        selectInput(ns("genomicSpace"), "Select Genomic Space:", choices = names(choices_list_raw)),
+        ApplyRemoveUI(ns("INNER")),
         uiOutput(ns("First_Choice")),
         uiOutput(ns("Second_Choice")),
         uiOutput(ns("Hist_Slider"))
@@ -90,7 +92,7 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
 #' @param choices_list - list of lists formatted like what's in key_columns.R
 #' @param my_data_raw - dataframe containing all data used in module
 #' @param my_gsva - reactive value containing results from user-run GSVA analyses
-Genomics_Outcome = function(input, output, session, choices_list_raw, my_data_raw, my_gsva) {
+Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata, predat, my_gsva) {
   # DEFINE NAMESPACE OBJECT FROM session OBJECT 
   ns = session$ns
   # RE-DEFINE REACTIVE INPUTS SO THEY CAN BE MODIFIED IF GSVA VALUES GET INTRODUCED
@@ -118,6 +120,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, my_data_ra
     }
     return(out_list)
   })
+  my_data_raw = callModule(ApplyRemove, "INNER", filterdata(), predat)
   my_data = reactive({
     out_data = my_data_raw()
     if (length(names(my_gsva)) > 0) {

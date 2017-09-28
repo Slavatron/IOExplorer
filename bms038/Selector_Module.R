@@ -1,5 +1,6 @@
 library(shiny)
-library
+library(htmltools)
+library(bsplus)
 #source("key_columns.R")
 
 Selection_ModuleUI = function(id, choices_list) {
@@ -7,28 +8,31 @@ Selection_ModuleUI = function(id, choices_list) {
   tagList(
     sidebarPanel(width = 3,
                  h3("Filter The Dataset"),
-                 uiOutput(ns("apply_Filters")),
-                 wellPanel(
-                   checkboxGroupInput(ns("Cohort"), "Treatment Cohort", choices = c("NIV3-NAIVE", "NIV3-PROG")),
-                   checkboxGroupInput(ns("Subtype"), "Melanoma Subtype", choices = c("BRAF" = "1", "RAS" = "2", "NF1" = "3", "TripleWt" = "4")),
-                   checkboxGroupInput(ns("Pre_Exome"), "Pre-Treatment Exome Sequenced", choices = c("Yes" = "1", "No" = "0")),
-                   checkboxGroupInput(ns("On_Exome"), "On-Treatment Exome Sequenced", choices = c("Yes" = "1", "No" = "0")),
-                   checkboxGroupInput(ns("Pre_RNA"), "Pre-Treatment RNA Sequenced", choices = c("Yes" = "1", "No" = "0")),
-                   checkboxGroupInput(ns("On_RNA"), "On-Treatment RNA Sequenced", choices = c("Yes" = "1", "No" = "0")),
-                   checkboxGroupInput(ns("Has_TCR"), "TCR Data Available", choices = c("Yes" = "1", "No" = "0")),
-                   checkboxGroupInput(ns("Response"), "Response", choices = c("PRCR", "SD", "PD"))
-                 )
+#                 uiOutput(ns("apply_Filters")),
+#                 uiOutput(ns("Filters_On_Button")),
+#                 uiOutput(ns("Filters_Off_Button")),
+                 bs_accordion(id = "beatles") %>%
+  bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
+  bs_append(title = "Cohort", 
+            content = checkboxGroupInput(ns("Cohort"), label = NULL, choices = c("NIV3-NAIVE", "NIV3-PROG"))) %>%
+  bs_append(title = "Melanoma Subtype", content = checkboxGroupInput(ns("Subtype"), label = NULL, choices = c("BRAF" = "1", "RAS" = "2", "NF1" = "3", "TripleWt" = "4"))) %>%
+  bs_append(title = "Pre-Treatment Exome Sequenced", content = checkboxGroupInput(ns("Pre_Exome"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+  bs_append(title = "On-Treatment Exome Sequenced", content = checkboxGroupInput(ns("On_Exome"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+  bs_append(title = "Pre-Treatment RNA Sequenced", content = checkboxGroupInput(ns("Pre_RNA"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+  bs_append(title = "On-Treatment RNA Sequenced", content = checkboxGroupInput(ns("On_RNA"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+  bs_append(title = "TCR Data Available", content = checkboxGroupInput(ns("Has_TCR"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+  bs_append(title = "Response", content = checkboxGroupInput(ns("Response"), label=NULL, choices = c("PRCR", "SD", "PD")))
     ),
     mainPanel(width = 9,
               h3("Summary Table"),
               "Compilation of clinical and genomic data for all 73 patients in BMS-038 dataset. The set of patients included in this table can be filtered using the checkboxes on the left side of the screen. To perform analyses using a filtered subset of the full dataset you must Apply the selected filters using either the checkbox or the radiobuttons. To modify the set of datatypes displayed in this table, use the checkboxes to the right of the table; note that all datatypes are available for relevant analyses regardless of whether they are displayed in this table",
+              wellPanel(DT::dataTableOutput(ns("table")), style = "overflow-x:scroll; overflow-y:scroll; max-height: 600px"),
               # IF USER SELECTS ANY ROWS IN THE DISPLAY TABLE, GIVE THEM THE OPTION TO FILTER BASED ON THAT
               # (note that this conditional statement uses javascript syntax)
               conditionalPanel(paste0("input['", ns("table_rows_selected"), "'].length > '0'"),
-              # CHECK BOX TO ALLOW FURTHER FILTRATION BY INDIVIDUAL ROWS
-              # (note that this filtering mechanism might fuck up if the table has been re-ordered)
-              uiOutput(ns("apply_table_filters"))),
-              wellPanel(DT::dataTableOutput(ns("table")), style = "overflow-x:scroll; overflow-y:scroll; max-height: 600px"),
+                               # CHECK BOX TO ALLOW FURTHER FILTRATION BY INDIVIDUAL ROWS
+                               # (note that this filtering mechanism might fuck up if the table has been re-ordered)
+                               uiOutput(ns("apply_table_filters"))),
               # CHECKBOX FOR COLUMNS TO DISPLAY
               h3("Add Columns to the Display Table"),
               column(4,
@@ -64,10 +68,37 @@ Selection_ModuleUI = function(id, choices_list) {
 
 Selection_Module = function(input, output, session, choices_list, my_data) {
   ns = session$ns
-  # CHECK BOX FOR WHETHER OR NOT FILTERS SHOULD BE APPLIED TO OTHER ANALYSES
-  output$apply_Filters = renderUI({
-    checkboxInput(ns("Filt"), "(Click Box To Apply Filters to Analyses)", value = FALSE)
+  # Reactive Variable for Applying/Removing filters
+  Filters_OnOff = reactiveValues(
+    Check = "On"
+  )
+  # Buttons for Applying and Removing Filters
+  output$Filters_On_Button = renderUI({
+    if (Filters_OnOff$Check == "On") {
+      actionButton(ns("Filters_On"), label = "Filters On", style = "color: white; 
+                     background-color: #0000ff")
+    } else {
+      actionButton(ns("Filters_On"), label = "Apply Filters")
+    }  
+    })
+  output$Filters_Off_Button = renderUI({
+    if (Filters_OnOff$Check == "Off") {
+      actionButton(ns("Filters_Off"), label = "Filters Off", style = "color: white; 
+                     background-color: #0000ff")
+    } else {
+      actionButton(ns("Filters_Off"), label = "Remove Filters")
+    }
   })
+  observeEvent(input$Filters_On, {
+    Filters_OnOff$Check = "On"
+  })
+  observeEvent(input$Filters_Off, {
+    Filters_OnOff$Check = "Off"
+  })
+#  # CHECK BOX FOR WHETHER OR NOT FILTERS SHOULD BE APPLIED TO OTHER ANALYSES
+#  output$apply_Filters = renderUI({
+#    checkboxInput(ns("Filt"), "(Click Box To Apply Filters to Analyses)", value = FALSE)
+#  })
   # FILTER INPUT TABLE
   filt_data = reactive({
     temp_dat = my_data
@@ -166,13 +197,12 @@ Selection_Module = function(input, output, session, choices_list, my_data) {
   # APPLY FILTERS TO OUTPUT TABLE IF CHECKBOX IS CLICK
   out_data = reactive({
     sub_data = my_data
-    if (input$Filt) {
+    if (Filters_OnOff$Check == "On") {
       sub_data = filt_data()
-    } 
-    # simple checkbox version
-#    if (input$Row_Filt) {
-#      sub_data = sub_data[input$table_rows_selected,]
-#    }
+    }
+#    if (input$Filt) {
+#      sub_data = filt_data()
+#    } 
     # more flexible radiobutton version
     if (!input$Radio_Row_Filt == "3") {
       if (input$Radio_Row_Filt == "1") {

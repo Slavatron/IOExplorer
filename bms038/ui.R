@@ -1,3 +1,4 @@
+compiler::enableJIT(0)
 library(shiny)
 library(plotly)
 library(Cairo)

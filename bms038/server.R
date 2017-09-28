@@ -1,3 +1,4 @@
+options(rgl.useNULL=TRUE)
 library(shiny)
 require(ggplot2)
 require(plotly)
@@ -85,12 +86,12 @@ shinyServer(function(input, output) {
   })
 
 # FEED REACTIVE DATA FRAME INTO OTHER TABS AS A FUNCTION CALL
-  callModule(Genomics_Outcome, "PRE", pre_choice1, Filtered_Pre_Data, myGSVA)
+  callModule(Genomics_Outcome, "PRE", pre_choice1, Filtered_Pre_Data, predat, myGSVA)
 #  callModule(Genomics_Outcome, "PRE", pre_choice1, predat)
 
 
 #  createDiffTab(input, output, preondat)
-  callModule(Genomics_Outcome, "DIFF", diff_choice1, Filt_Preon, myGSVA)
+  callModule(Genomics_Outcome, "DIFF", diff_choice1, Filt_Preon, preondat, myGSVA)
 
 # createCrossCorrTab(input, output, predat)
   callModule(CrossTab, "CROSS", pre_choice1, Filtered_Pre_Data)
