@@ -40,10 +40,16 @@ CrossTabUI <- function(id, choices_list) {
   tagList(
     sidebarLayout(
       sidebarPanel(
+#        textOutput(ns("debugText")),
         wellPanel(
-          selectInput(ns("genomicSpace_Y"), "Y-Axis Genomic Space:", choices = names(choices_list)),
+          ApplyRemoveUI(ns("INNER"))
+        ),
+        wellPanel(
+#          selectInput(ns("genomicSpace_Y"), "Y-Axis Genomic Space:", choices = names(choices_list)),
+          uiOutput(ns("cross_First")),
           uiOutput(ns("cross_Second")),
-          selectInput(ns("genomicSpace_X"), "X-Axis Genomic Space:", choices = names(choices_list)),
+#          selectInput(ns("genomicSpace_X"), "X-Axis Genomic Space:", choices = names(choices_list)),
+          uiOutput(ns("cross_First_2")),
           uiOutput(ns("cross_Second_2"))
         )
       ),
@@ -88,44 +94,93 @@ getCrossID <- function(genomicSpace, feature, choices_list) {
 # SUMMARY:
 # Creates cross-correlation page of BMS Portal. Includes variable-selection widgets and 2 plots
 #' @param choices_list - list of lists defined in key_columns.R
-#' @param my_data - reactive object containing a data frame
+#' @param filt_data - reactive object containing a data frame
+#' @param full_data - normal data frame (unfiltered version of my_data)
 # STILL TO DO:
 # 1. ELIMINATE HARD-CODED ELEMENTS
 # 2. GENERALIZE CODE SO IT WORKS FOR PRE-ON DATA JUST AS WELL AS FOR PRE-DATA
-CrossTab <- function(input, output, session, choices_list, my_data) {
+CrossTab <- function(input, output, session, choices_list_raw, filt_data, full_data, my_gsva) {
   ns = session$ns
+  # RE-DEFINE REACTIVE INPUTS SO THEY CAN BE MODIFIED IF GSVA VALUES GET INTRODUCED
+  Saved_GSVA_Values = reactive({
+    # Start with an empty data.frame
+    out_data = data.frame()
+    # Condense GSVA values from my_gsva when there are named entries in it
+    if (names(my_gsva) > 0) {
+      out_data = do.call("rbind", lapply(reactiveValuesToList(my_gsva), function(x) as.data.frame(t(x[[4]]))))
+    }
+    out_data = as.data.frame(t(out_data))
+    return(out_data)
+  })
+  choices_list = reactive({
+    out_list = choices_list_raw
+    if (length(names(my_gsva)) > 0) {
+      # Define new list of variables based on Saved_GSVA_Values
+      new_vals = names(Saved_GSVA_Values())
+      new_list = list(new_vals)
+      names(new_list[[1]]) = new_vals
+      # Append choices_list with these values
+      list_pos = length(out_list)+1
+      out_list[[list_pos]] = unlist(new_list)
+      names(out_list)[list_pos] = "User-Defined GSVA"
+    }
+    return(out_list)
+  })
+  # USE ApplyRemoveModule TO SWITCH BETWEEN FILTERED/UNFILTERED DATA
+  #my_data = callModule(ApplyRemove, "INNER", filt_data(), full_data)
+  
+  my_data_raw = callModule(ApplyRemove, "INNER", filt_data(), full_data)
+  my_data = reactive({
+    out_data = my_data_raw()
+    if (length(names(my_gsva)) > 0) {
+      gsva_data = Saved_GSVA_Values()
+      # check column names...
+      gsva_data$Sample = rownames(gsva_data)
+      out_data = merge(out_data, gsva_data, by = "Sample")
+    }
+    return(out_data)
+  })
+#  output$debugText = renderText({
+#    class(choices_list)
+#  })
   # INTERACTIVE UI FOR VARIABLE SELECTION DROP-DOWN MENUS
+  output$cross_First = renderUI({
+    selectInput(ns("genomicSpace_Y"), "Y-Axis Genomic Space:", choices = names(choices_list()))
+  })
   output$cross_Second = renderUI( {
-#    selectInput(ns("cross_sec_var"), "Y-Axis Feature", choices = unname(choices_list[[input$genomicSpace_Y]]))
-    radioButtons(ns("cross_sec_var"), "Y-Axis Feature", choices = unname(choices_list[[input$genomicSpace_Y]]))
+    req(input$genomicSpace_Y)
+    radioButtons(ns("cross_sec_var"), "Y-Axis Feature", choices = unname(choices_list()[[input$genomicSpace_Y]]))
   })
   
+  output$cross_First_2 = renderUI({
+    selectInput(ns("genomicSpace_X"), "X-Axis Genomic Space:", choices = names(choices_list()))
+  })
   output$cross_Second_2 = renderUI( {
-#    selectInput(ns("cross_sec_var_2"), "X-Axis Feature", choices = unname(choices_list[[input$genomicSpace_X]]))
-    radioButtons(ns("cross_sec_var_2"), "X-Axis Feature", choices = unname(choices_list[[input$genomicSpace_X]]))
+    req(input$genomicSpace_X)
+    radioButtons(ns("cross_sec_var_2"), "X-Axis Feature", choices = unname(choices_list()[[input$genomicSpace_X]]))
   })
   # GET IDENTIIES OF SELECTED VARIABLES
   getID_Y = reactive({
-    my_pos = which(choices_list[[input$genomicSpace_Y]] == input$cross_sec_var)
-    tid = names(choices_list[[input$genomicSpace_Y]])[my_pos]
+    my_pos = which(choices_list()[[input$genomicSpace_Y]] == input$cross_sec_var)
+    tid = names(choices_list()[[input$genomicSpace_Y]])[my_pos]
     return(tid)
   })
   getID_X = reactive({
-    my_pos = which(choices_list[[input$genomicSpace_X]] == input$cross_sec_var_2)
-    tid = names(choices_list[[input$genomicSpace_X]])[my_pos]
+    my_pos = which(choices_list()[[input$genomicSpace_X]] == input$cross_sec_var_2)
+    tid = names(choices_list()[[input$genomicSpace_X]])[my_pos]
     return(tid)
   })
   # CROSS-CORRELATION PLOT
   output$corr_plot <- renderPlot({
-    y_vars = unname(choices_list[[input$genomicSpace_Y]])
-    x_vars = unname(choices_list[[input$genomicSpace_X]])
+    y_vars = unname(choices_list()[[input$genomicSpace_Y]])
+    x_vars = unname(choices_list()[[input$genomicSpace_X]])
     clean_vars = c()
     for (i in y_vars) {
-      cur_var = getCrossID(input$genomicSpace_Y, i, choices_list)
+      cur_var = getCrossID(input$genomicSpace_Y, i, choices_list())
       clean_vars = c(clean_vars, cur_var)
     }
     for (i in x_vars) {
-      cur_var = getCrossID(input$genomicSpace_X, i, choices_list)
+      cur_var = getCrossID(input$genomicSpace_X, i, choices_list())
       clean_vars = c(clean_vars, cur_var)
     }
     clean_vars = unique(clean_vars)

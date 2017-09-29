@@ -94,8 +94,8 @@ shinyServer(function(input, output) {
   callModule(Genomics_Outcome, "DIFF", diff_choice1, Filt_Preon, preondat, myGSVA)
 
 # createCrossCorrTab(input, output, predat)
-  callModule(CrossTab, "CROSS", pre_choice1, Filtered_Pre_Data)
-  callModule(CrossTab, "CROSSDIFF", diff_choice1, Filt_Preon)
+  callModule(CrossTab, "CROSS", pre_choice1, Filtered_Pre_Data, predat, myGSVA)
+  callModule(CrossTab, "CROSSDIFF", diff_choice1, Filt_Preon, preondat, myGSVA)
 #  createSelectorTab(input, output, values$predat_1)
   
   callModule(Clonality, "CLONE", dd, clin)
