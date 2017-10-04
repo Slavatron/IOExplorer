@@ -32,10 +32,10 @@ ClonalityUI = function(id) {
         tabPanel("Waterfall Plot",
                  plotOutput(ns("Waterfall_Plot"))
         ),
-        tabPanel("Survival",
-                 radioButtons(ns("Survival_Type"), label = "Outcome to Analyze", choices = list("Overal Survival (OS)" = 1, "Progression Free Survival (PFS)" = 2), inline = TRUE, selected = 1),
-                 plotOutput(ns("Survival_Plot"))
-        ),
+#        tabPanel("Survival",
+#                 radioButtons(ns("Survival_Type"), label = "Outcome to Analyze", choices = list("Overal Survival (OS)" = 1, "Progression Free Survival (PFS)" = 2), inline = TRUE, selected = 1),
+#                 plotOutput(ns("Survival_Plot"))
+#        ),
         tabPanel("Density Plot",
                  "<Explain how to read interpret these plots>",
                  plotOutput(ns("Density_Plot")),
@@ -89,9 +89,9 @@ Clonality = function(input, output, session, my_data, clin) {
     make.boxplot(dd, plot.type = input$plot_type, ccf.type = input$ccf_type, threshold = input$threshold_slider, ci = input$CI, my_class = my_class)
   })
   # SURVIVAL PLOTS
-  output$Survival_Plot = renderPlot({
-    alt.survival.plot(dd, clin, plot.type = input$plot_type, ccf.type = input$ccf_type, threshold = input$threshold_slider, ci = input$CI, surv_type = input$Survival_Type)
-  })
+#  output$Survival_Plot = renderPlot({
+#    alt.survival.plot(dd, clin, plot.type = input$plot_type, ccf.type = input$ccf_type, threshold = input$threshold_slider, ci = input$CI, surv_type = input$Survival_Type)
+#  })
   # WATERFALL PLOTS
   output$Waterfall_Plot = renderPlot({
 #    plot(1:10, main = paste(names(clin)[ncol(clin)]))
@@ -109,6 +109,7 @@ Clonality = function(input, output, session, my_data, clin) {
   })
   # DENSITY PLOT
   output$Density_Plot = renderPlot({
+    req(input$dense_pt)
     #    plot(1:10, main = paste(class(pt_list())))
     plot.density(dd, sample = input$dense_pt, ccf.type = input$ccf_type, threshold = input$threshold_slider, ci = input$CI, my_class = my_class) 
   })
