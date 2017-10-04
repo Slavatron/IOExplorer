@@ -66,7 +66,7 @@ ui<-navbarPage("BMS038",
 #           tabPanel("Gene Expr", gene_exp_ui),
 	   tabPanel("Gene Expr", GeneExprUI("EXPR", pre_choice1)),	
            tabPanel("TCR", TCR_Freq_DistUI("Test")),
-           tabPanel("Neo-antigens", neoantigen_ui),
+#           tabPanel("Neo-antigens", neoantigen_ui),
 #           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", DEMO_LIST)),
            header=hPanel
            )
