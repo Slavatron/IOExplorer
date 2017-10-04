@@ -18,7 +18,7 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
       wellPanel(
         # input/output VARIABLES CREATED IN MODULE'S SERVER FUNCTION MUST BE ACCESSED VIA NAMESPACE OBJECT, ns()
 #        selectInput(ns("genomicSpace"), "Select Genomic Space:", choices = names(choices_list_raw)),
-        ApplyRemoveUI(ns("INNER")),
+#        ApplyRemoveUI(ns("INNER")),
         uiOutput(ns("First_Choice")),
         uiOutput(ns("Second_Choice")),
         uiOutput(ns("Hist_Slider"))
@@ -30,6 +30,7 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
       h3(Subtitles_List[[id]]),
       Caption_List[[id]],
       p(),
+#      ApplyRemoveUI(ns("INNER")),
       tabsetPanel(
         tabPanel("Survival", 
                  textOutput(ns("debug_Text")),
@@ -81,7 +82,8 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
                  plotOutput(ns("byoForestPlot"))
 #                 plotOutput(ns("byoSurv_Plot"))
                  )
-        )
+        ),
+        ApplyRemoveUI(ns("INNER"))
       )
     )
 }
@@ -165,6 +167,8 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
     if (medv == minv) {
       middle_val = meanv
     }
+    # set min on range to 0 if no negative #'s
+    if (minv > 0 ) { minv <- 0 }
     sliderInput(ns("slider_value"), label = h4("Bisect Patients into Two Groups for Analysis"), min = minv, max = maxv, value = c(minv, middle_val), round = -5)
   })
   # SLIDER-CONTROLLED HISTOGRAM
