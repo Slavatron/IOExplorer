@@ -8,7 +8,13 @@ Exome <- list("log10mut" = "Mutation Load (log)",
 
 # Need to add in other T-cell metrics from Jonathan here
 TCR <- list("TCR.D90" = "D90",
-            "TCR_TIL" = "TCR_TIL"
+            "TCR_TIL" = "Tumor Infiltrating Lymphocyte Fraction",
+            "productive_templates" = "Productive Template Count",
+            "productive_rearrangements" = "Productive Rearrangement Count",
+            "TCR.Num_CDR3" = "CDR3 Count",
+            "productive_entropy" = "Shannon Entropy of Productive CDR3s",
+            "productive_clonality" = "Clonality of Productive CDR3s"
+            
 #            "TCR.DeltaH" = "TCR.DeltaH",
 #            "TCR.DeltaCL" = "TCR.DeltaCL"
             )
@@ -67,20 +73,28 @@ pre_choice1 = list("Exome" = unlist(Exome), "RNASeq" = unlist(RNASeq), "IHC" = u
 ###################################################
 
 # DEFINE OPTIONS FOR DROP-DOWN MENUS for Diff-therapy Tab
-Exome_Diff <- list("delt.log10mut" = "Change in Mutaiton Load (log)", 
-              "delt.log10na" = "Change Neoantigen Load (log)", 
+Exome_Diff <- list("delt.log10mut" = "Change in Mutation Load (log)", 
+              "delt.log10na" = "Change in Neoantigen Load (log)", 
               "delt.thresh95.muts" = "Change in Clonal Mutation Load",   
+              "delt.Signature.1" = "Change in Aging Signature",
               "delt.Signature.7" ="Change in UV Signature"
 )
 
 # Need to add in other T-cell metrics from Jonathan here
-TCR_Diff <- list("delt.TCR.D90" = "Chnage in DD90",
+TCR_Diff <- list("delt.TCR.D90" = "Change in D90",
             "delt.TCR.Num_CDR3" = "Change in Num CDR3",
             "delt.TCR.fraction_TILs" = "Change in Fraction of TILs"
 )
 
 # Need to add other signatures from Alexis here
-RNASeq_Diff <- list("delt.cytscore" = "Change in Cytolytic Score")
+RNASeq_Diff <- list("delt.cytscore" = "Change in Cytolytic Score",
+                    "delt.CIB.Tcell" = "Change in T-Cells (Cibersort)",
+                    "delt.CIB.Bcell" = "Change in B-Cells (Cibersort)",
+                    "delt.CIB.NK" = "Change in Natural Killer Cells (Cibersort)",
+                    "delt.CIB.Mac" = "Change in Macrophages (Cibersort)",
+                    "delt.CIB.Mast" = "Change in Mast Cells (Cibersort)",
+                    "delt.CIB.Misc" = "Change in Miscellaneous (Cibersort)"
+                    )
 
 # Need to make sure these are exact columns that are used in paper
 ImmuneDeconvolution_Diff  <- list("delt.T.cells.CD8" = "CD8 T-Cells",
@@ -89,9 +103,9 @@ ImmuneDeconvolution_Diff  <- list("delt.T.cells.CD8" = "CD8 T-Cells",
                              "delt.Macrophages.M1" = "Macrophages"
 )
 
-IHC_Diff <- list("delt.PDL1.1plus.pos" = "PDL1 Positive",
-            "delt.Perc.CD8.of.Total" = "Percent CD8",
-            "delt.Perc.PD1.of.Total" = "Percent PD1"
+IHC_Diff <- list("delt.PDL1.1plus.pos" = "Change in PDL1 Positive",
+            "delt.Perc.CD8.of.Total" = "Change in Percent CD8",
+            "delt.Perc.PD1.of.Total" = "Change in Percent PD1"
 )
 
 
