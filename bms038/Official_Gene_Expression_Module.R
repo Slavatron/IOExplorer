@@ -169,7 +169,9 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
   )
   # Buttons for Applying and Removing Filters
   output$AddGenesButton = renderUI({
-    if (AddRemoveGenes$Check == "ON") {
+    if (AddRemoveGenes$Check == "ON" & length(setdiff(input$ChosenPathwayGenes, myGenes$Check)) >0) {
+      actionButton(ns("AddGenes"), label = "Add These Genes Too", style = "color: white; background-color: #ff8866")
+    } else if (AddRemoveGenes$Check == "ON" & length(setdiff(input$ChosenPathwayGenes, myGenes$Check)) == 0) {
       actionButton(ns("AddGenes"), label = "Genes Added", style = "color: white; background-color: #0000ff")
     } else {
       actionButton(ns("AddGenes"), label = "Add Checked Genes")
