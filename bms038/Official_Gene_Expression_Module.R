@@ -83,8 +83,10 @@ GeneExprUI = function(id, choices_list) {
         textInput(ns("GeneText"), label = "Input Genes as Text", width = '100%'),
         textOutput(ns("BadFeedback")),
         selectInput(ns("Pathways"), "Select Genes by Pathway", choices = c(Type_Names)),
-        actionButton(ns("AddGenes"), label = "Add These Genes"),
-        actionButton(ns("DitchGenes"), label = "Remove All Checked Genes"),
+        uiOutput(ns("AddGenesButton")),
+        uiOutput(ns("DitchGenesButton")),
+#        actionButton(ns("AddGenes"), label = "Add These Genes"),
+#        actionButton(ns("DitchGenes"), label = "Remove All Checked Genes"),
         uiOutput(ns("Pathway_Boxes"))
       ),
     mainPanel(width = 9,
@@ -97,9 +99,10 @@ GeneExprUI = function(id, choices_list) {
 #                   "Run GSVA if you want to save gene sets...",
                    actionButton(ns("RunGSVA"), "Run GSVA Analysis and Save"))
           ),
-#          br(),
-          column(6,wellPanel(DT::dataTableOutput(ns("Selection_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")),
-          column(6,wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px"))
+          column(6, tableOutput(ns("Selection_Table"))),
+          column(6, tableOutput(ns("GSVA_Table")))
+#          column(6,wellPanel(DT::dataTableOutput(ns("Selection_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")),
+#          column(6,wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px"))
 #          actionButton(ns("SaveGeneSet"), "Save Gene Set")        
           ),
 #        tabPanel("View GSVA Values",
@@ -158,12 +161,34 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
   })
   # Create reactive value for genes selected from pathway checkboxes
   myGenes = reactiveValues(
-    Check = c()
+    Check = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3")
   )
+  # Buttons for adding/removing genes
+  AddRemoveGenes = reactiveValues(
+    Check = "ON"
+  )
+  # Buttons for Applying and Removing Filters
+  output$AddGenesButton = renderUI({
+    if (AddRemoveGenes$Check == "ON") {
+      actionButton(ns("AddGenes"), label = "Genes Added", style = "color: white; background-color: #0000ff")
+    } else {
+      actionButton(ns("AddGenes"), label = "Add Checked Genes")
+    }
+    
+  })
+  output$DitchGenesButton = renderUI({
+    if (AddRemoveGenes$Check == "OFF") {
+      actionButton(ns("DitchGenes"), label = "Genes Removed", style = "color: white; background-color: #0000ff")
+    } else {
+      actionButton(ns("DitchGenes"), label = "Remove All Checked Genes")
+    }
+  })
   observeEvent(input$AddGenes, {
+    AddRemoveGenes$Check = "ON"
     myGenes$Check = c(myGenes$Check, input$ChosenPathwayGenes)
   })
   observeEvent(input$DitchGenes, {
+    AddRemoveGenes$Check = "OFF"
     myGenes$Check = c()
   })
   
@@ -214,15 +239,19 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     return(out_dat)
   })
 #### DISPLAY TABLE OF SELECTED GENES
-  output$Selection_Table = DT::renderDataTable({
-    AggGenes()},
-    options=list(
-      orderClasses = TRUE,
-      lengthMenu = list(
-        c(-1, 10000, 1000, 100, 10), 
-        c('All','10000', '1000', '100', '10')),
-      style="font-size:25%")
-  )
+  output$Selection_Table = renderTable({
+    req(AggGenes)
+    AggGenes()
+  }, bordered = TRUE, rownames =TRUE)
+#  output$Selection_Table = DT::renderDataTable({
+#    AggGenes()},
+#    options=list(
+#      orderClasses = TRUE,
+#      lengthMenu = list(
+#        c(-1, 10000, 1000, 100, 10), 
+#        c('All','10000', '1000', '100', '10')),
+#      style="font-size:25%")
+#  )
   
   # DEFINE CHECKBOX OUTPUT OF ALL CHOSEN GENES
   output$GeneCheckBoxes = renderUI({
@@ -304,18 +333,22 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
 #      Saved_Gene_Sets = Saved_Gene_Sets[-1]
 #    }
   })
-  output$GSVA_Table = DT::renderDataTable({
+  output$GSVA_Table = renderTable({
     req(Saved_GSVA_Values)
-    Saved_GSVA_Values()},
-#    as.data.frame(t(Saved_GSVA_Values()))},
-#    gsva_table = as.data.frame(t(Saved_GSVA_Values()))},
-    options=list(
-      orderClasses = TRUE,
-      lengthMenu = list(
-        c(-1, 10000, 1000, 100, 10), 
-        c('All','10000', '1000', '100', '10')),
-      style="font-size:25%")
-  )
+    Saved_GSVA_Values()
+  }, bordered = TRUE, rownames =TRUE)
+#  output$GSVA_Table = DT::renderDataTable({
+#    req(Saved_GSVA_Values)
+#    Saved_GSVA_Values()},
+##    as.data.frame(t(Saved_GSVA_Values()))},
+##    gsva_table = as.data.frame(t(Saved_GSVA_Values()))},
+#    options=list(
+#      orderClasses = TRUE,
+#      lengthMenu = list(
+#        c(-1, 10000, 1000, 100, 10), 
+#        c('All','10000', '1000', '100', '10')),
+#      style="font-size:25%")
+#  )
 
   output$debugText = renderText({
     req(GSEA_List())
