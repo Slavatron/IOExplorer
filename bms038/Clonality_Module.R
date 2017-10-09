@@ -14,22 +14,41 @@ ClonalityUI = function(id) {
   tagList(
     sidebarPanel(width = 3,
                  wellPanel(
-                   radioButtons(ns("plot_type"), "Plot Type", choices = c("Clonal" = "clonal", "Selection" = "selection")),
+#                   radioButtons(ns("plot_type"), "Plot Type", choices = c("Clonal" = "clonal", "Selection" = "selection")),
                    radioButtons(ns("ccf_type"), "CCF Method", choices = c("Absolute" = "absolute", "Pyclone" = "pyclone")),
-                   checkboxInput(ns("CI"), "Include Confidence Interval"),
+                   conditionalPanel(
+                     condition = "input.ccf_type == 'pyclone'",
+                     ns = ns,
+                     checkboxInput(ns("CI"), "Include Confidence Interval")
+                   ),
+#                   uiOutput(ns("CI_Checkbox")),
+#                   checkboxInput(ns("CI"), "Include Confidence Interval"),
                    sliderInput(ns("threshold_slider"), label = "Threshold", min = 0.5, max = 0.99, value = 0.95, round = -2)
                  )
     ),
     mainPanel(
+      h3("Clonality Changes in response to Ipilimumab treatment"),
+      "Clonality changes were measured using cancer cell fraction (CCF) estimates to compare the relative abundance of single-nucleotide variations (SNV) detected in the pre-treatment and on-treatment samples. CCF-estimating software, Pyclone and Absolute, use different algorithms but produce similar results. Taking into account tumor samples taken before and after treatment, each unique SNV can be categorized as one of eight clonal event types (displayed in 'Clonality Barplot') that contribute to either clonal expansion (aka 'positive selection'), clonal contraction or neither.",
+#      "Here you can visualize clonality changes in response to Ipilimumab treatment.",
       tabsetPanel(
         tabPanel("Clonality Barplot",
-                 radioButtons(ns("bar_type"), label = "", choices = list("Number of Variants" = "1", "Relative Frequencies" = "2")),
+                 fluidRow(
+                   column(2,
+                          radioButtons(ns("plot_type"), "Plot Type", choices = c("Clonal" = "clonal", "Selection" = "selection"))),
+                   column(3,
+                          radioButtons(ns("bar_type"), label = "Display Type", choices = list("Number of Variants" = "1", "Relative Frequencies" = "2"))),
+                   column(7,"Here you can view the prevalance of different types of clonal events in each patient. Use the 'Plot Type' widget to switch between showing the specific event types or showing the effect of selective pressure.")
+                 ),
+#                 radioButtons(ns("plot_type"), "Plot Type", choices = c("Clonal" = "clonal", "Selection" = "selection")),
+#                 radioButtons(ns("bar_type"), label = "", choices = list("Number of Variants" = "1", "Relative Frequencies" = "2")),
                  plotOutput(ns("clone_bar"))
         ),
         tabPanel("Clonality Boxplot",
+                 "<These plots...>",
                  plotOutput(ns("clone_box"))
         ),
         tabPanel("Waterfall Plot",
+                 "Genomic contraction is greatest among patients who responded to treatment (PRCR & SD) and genomic expansion is primarily seen among patients who did not respond (PD). Using the 'CCF Method' and 'Threshold' widgets to modify how clonal expansion/contraction is computed can change the clonal characterization of some patients but not the overall trend of contraction being associated with response to treatment.",
                  plotOutput(ns("Waterfall_Plot"))
         ),
 #        tabPanel("Survival",
@@ -37,11 +56,16 @@ ClonalityUI = function(id) {
 #                 plotOutput(ns("Survival_Plot"))
 #        ),
         tabPanel("Density Plot",
-                 "<Explain how to read interpret these plots>",
-                 plotOutput(ns("Density_Plot")),
-                 wellPanel(
-                   uiOutput(ns("density_patient_selection"))
-                 )
+                 fluidRow(
+#                   column(4, uiOutput(ns("density_patient_selection"))),
+                   column(8, "These plots highlight putative clonal clusters. Individual SNVs are represented as points on the graph with the X and Y axes indicating their prevalence in the pre-treatment and on-treatment samples. SNVs in the top-right corner were highly prevalent before and after treatment, SNVs in the bottom-right corner decreased or disappeared after treatment and the top-left corner consists of SNVs that were prevalent after treatment but rare or absent before treatment."),
+                   column(4, uiOutput(ns("density_patient_selection")))
+                 ),
+#                 "<Explain how to read interpret these plots>",
+                 plotOutput(ns("Density_Plot"))
+#                 wellPanel(
+#                   uiOutput(ns("density_patient_selection"))
+#                 )
         )
       )
     )
@@ -64,7 +88,10 @@ Clonality = function(input, output, session, my_data, clin) {
   my_class = as.character(my_response[,2])
   names(my_class) = my_response[,1]
   
-  
+  # CONDITIONAL UI-ELEMENT FOR PYCLONE CONFIDENCE INTERVALE
+  output$CI_Checkbox = renderUI({
+    checkboxInput(ns("CI"), "Include Confidence Interval")
+  })
   # DEFINE COLOR SCHEME FOR CLONALITY BARPLOTS
 #  reds = brewer.pal(6, 'PuRd')
 #  greens = brewer.pal(6, 'Blues')
