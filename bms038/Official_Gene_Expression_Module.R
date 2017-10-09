@@ -35,7 +35,9 @@ onX = xdat[,-pres]
 
 cytdf = read.csv("bms038_data_050917.csv")
 cytdf = cytdf[cytdf$Sample %in% names(xdat),c("Sample", "cytscore")]
-
+aDC = readRDS("fpkm.aDC.gsva.RDS")
+#aDC$Sample = rownames(aDC)
+aDC_Set = list("Name" = "aDC", "Hugo" = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3"), "Entrez" = c("10148","27074","3620", "4940","6346"), "GSVA" = aDC)
 
 
 ###########################################################################
@@ -298,32 +300,12 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     actionButton(ns("SaveGeneSet"), "Save Gene Set")
   })
   # List of GSEA_List instances; gets updated with each click of "SaveGeneSet"
-  Saved_Gene_Sets = reactiveValues()
+  Saved_Gene_Sets = reactiveValues(
+    aDC = list("Name" = "aDC", "Hugo" = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3"), "Entrez" = c("10148","27074","3620", "4940","6346"), "GSVA" = aDC)
+  )
   Saved_GSVA_Values = reactive({
-    # Start with an empty data.frame
-    out_data = data.frame()
-    cyt_data = cytdf
-    names(cyt_data) = c("Sample", "Cytolytic_Score")
-#    cyt_data = as.data.frame(cytdf$cytscore)
-#    rownames(cyt_data) = cytdf$Sample
-#    names(cyt_data) = "Cytolytic_Score"
-    
-    
-    # Condense GSVA values from Saved_Gene_Sets when "SaveGeneSet" button is clicked
-    if (input$RunGSVA) {
-      out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) as.data.frame(t(x[[4]]))))
-      out_data = as.data.frame(t(out_data))
-      out_data$Sample = rownames(out_data)
-      cyt_data = merge(cyt_data, out_data, by = "Sample")
-    }
-#    out_data = as.data.frame(t(out_data))
-    rownames(cyt_data) = cyt_data$Sample
-    cyt_data = as.data.frame(cyt_data[,-1])
-    if (ncol(cyt_data) == 1) {
-      names(cyt_data) = "Cytolytic_Score"
-      rownames(cyt_data) = cytdf$Sample
-    }
-    return(cyt_data)
+    out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) as.data.frame(t(x[[4]]))))
+    out_data = as.data.frame(t(out_data))
   })
   observeEvent(input$RunGSVA, {
     req(GSEA_List()) 
