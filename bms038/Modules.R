@@ -1,6 +1,7 @@
 # MODULE: Genomics_Outcome()
 source("ForestFire.R")
 source("ApplyRemoveModule.R")
+source("Make_Diff_GSVA.R")
 # SUMMARY:
 # Module creates the page "Genomics and Outcome" tab of the BMS038 companion website.
 # STILL TO DO:
@@ -102,35 +103,63 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
     # Start with an empty data.frame
     out_data = data.frame()
     # Condense GSVA values from my_gsva when there are named entries in it
-    if (names(my_gsva) > 0) {
+#    if (names(my_gsva) > 0) {
       out_data = do.call("rbind", lapply(reactiveValuesToList(my_gsva), function(x) as.data.frame(t(x[[4]]))))
-    }
+#    }
     out_data = as.data.frame(t(out_data))
+    # Process Delta values if necessary
+    if (nrow(out_data) > 0 & nrow(predat) == 62) {
+#      print(head(out_data))
+      out_data = make_diff_gsva(out_data)
+#      print(head(out_data))
+#      print(head(out_data))
+#      print(str(out_data))
+    }
     return(out_data)
   })
   choices_list = reactive({
     out_list = choices_list_raw
-    if (length(names(my_gsva)) > 0) {
+#    if (length(names(my_gsva)) > 0) {
       # Define new list of variables based on Saved_GSVA_Values
       new_vals = names(Saved_GSVA_Values())
+#      delt_vals = paste("delt", new_vals, sep=".")
+#      if (nrow(predat) == 62) { new_vals = delt.vals}
+      # Change names if in "DIFF" tab
+#      if (nrow(predat) == 62) {
+#        new_vals = paste("delt", new_vals, sep=".")
+#      }
+#      print(class(new_vals))
+#      print(new_vals)
+#      print(class(delt_vals))
+#      print(delt_vals)
       new_list = list(new_vals)
       names(new_list[[1]]) = new_vals
       # Append choices_list with these values
       list_pos = length(out_list)+1
       out_list[[list_pos]] = unlist(new_list)
       names(out_list)[list_pos] = "User-Defined GSVA"
-    }
+#    }
     return(out_list)
   })
   my_data_raw = callModule(ApplyRemove, "INNER", filterdata(), predat)
   my_data = reactive({
     out_data = my_data_raw()
-    if (length(names(my_gsva)) > 0) {
+#    if (length(names(my_gsva)) > 0) {
       gsva_data = Saved_GSVA_Values()
       # check column names...
-      gsva_data$Sample = rownames(gsva_data)
-      out_data = merge(out_data, gsva_data, by = "Sample", all.x = TRUE)
-    }
+      # Merge as by 'PatientIDx' if you're working with DIFF samples
+      if (nrow(predat) == 62) {
+        gsva_data$PatientID.x = rownames(gsva_data)
+        out_data = merge(out_data, gsva_data, by = "PatientID.x", all.x = TRUE)
+      } else {
+        gsva_data$Sample = rownames(gsva_data)
+        out_data = merge(out_data, gsva_data, by = "Sample", all.x = TRUE)
+      }
+#      print(head(out_data[,c("Sample","delt.aDC")]))
+#      print(dim(out_data))
+#      print(head(names(out_data)))
+#      print(tail(names(out_data)))
+#    }
     return(out_data)
   })
   output$debug_Text = renderText({
