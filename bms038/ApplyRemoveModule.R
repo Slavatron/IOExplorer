@@ -6,11 +6,21 @@ ApplyRemoveUI = function(id) {
   tagList(
 #    actionButton(ns("Filters_On"), label = "Apply Filters"),
 #    actionButton(ns("Filters_Off"), label = "Remove Filters"),
-    fluidRow(
-      column(6,    uiOutput(ns("Filters_On_Button"))),
-      column(6,    uiOutput(ns("Filters_Off_Button")))
-    ),
-    textOutput(ns("Filter_Count"))
+    wellPanel(
+      h4("Filter Patients"),
+      "Define filters on 'Select Patients' page to view analyses performed on a subset of the available data. By default, no filters are defined and these buttons have no effect. To define a set of filters, visit the 'Select Patients' page.", 
+      fluidRow(
+        column(3,    uiOutput(ns("Filters_On_Button"))),
+        column(3,    uiOutput(ns("Filters_Off_Button"))),
+        column(3, textOutput(ns("Filter_Count")))
+      ),
+      "NOTE: the number of patients displayed graphically may be reduced further depending on the availability of your selected variables."
+    )
+#    fluidRow(
+#      column(6,    uiOutput(ns("Filters_On_Button"))),
+#      column(6,    uiOutput(ns("Filters_Off_Button")))
+#    ),
+#    textOutput(ns("Filter_Count"))
 #    fluidRow(
 #      column(6, textOutput(ns("Filter_Status"))),
 #      column(6, textOutput(ns("Filter_Count")))

@@ -129,7 +129,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
       gsva_data = Saved_GSVA_Values()
       # check column names...
       gsva_data$Sample = rownames(gsva_data)
-      out_data = merge(out_data, gsva_data, by = "Sample")
+      out_data = merge(out_data, gsva_data, by = "Sample", all.x = TRUE)
     }
     return(out_data)
   })
