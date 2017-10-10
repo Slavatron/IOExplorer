@@ -12,11 +12,15 @@ cc1 = c(reds[4:2], yellows[3:2], greens[3:1])
 #' @param dd clonality-specific dataframe
 #' @param clin clinical dataframe with an extra column for Clonal_Growth
 update.clonal_growth = function(dd, clin) {
+  my_idx = (!is.na(dd$pre.ccf)) & (!is.na(dd$on.ccf))
+  dd = dd[my_idx,]
   dd$Clonal_Growth = 0
-  dd[dd$clonal2 == "positive selection",]$Clonal_Growth = 1
+  dd[dd$clonal2 == "no selection",]$Clonal_Growth = 1
   dd[dd$clonal2 == "negative selection",]$Clonal_Growth = -1
+
   for (pt in unique(dd$sample)) {
     temp_dd = dd[dd$sample == pt,]
+
     #  growth_sum = sum(temp_dd$Clonal_Growth)
     growth_sum = (sum(temp_dd$Clonal_Growth)/nrow(temp_dd))
     clin[clin$PatientID.x == pt,]$Clonal_Growth = growth_sum
@@ -35,7 +39,7 @@ update.clonal_growth = function(dd, clin) {
 clonality_waterfall = function(dd, clin, ccf.type = "pyclone", threshold = 0.9, ci=F) {
   dd = update.ccf(dd, ccf.type, threshold, ci)
   clin = update.clonal_growth(dd, clin)
-  
+
   temp_dat = clin[,c("PatientID.x", "Clonal_Growth", "myBOR")]
   temp_dat = temp_dat[temp_dat$PatientID.x %in% dd$sample,]
   temp_dat = temp_dat[order(temp_dat$Clonal_Growth),]
@@ -45,10 +49,10 @@ clonality_waterfall = function(dd, clin, ccf.type = "pyclone", threshold = 0.9, 
   wf$Patient = factor(wf$Patient, levels = pt_names)
   w_plot = ggplot(wf, aes(x = Patient, y = Clonal_Growth)) +
     geom_bar(stat = "identity", aes(x = Patient, y = Clonal_Growth, fill = Response)) +
-    ggtitle("Genomic Expansion/Contraction") +
+    ggtitle("Genomic Changes (Contraction vs Persistence)") +
     ylab("Net Size Change") +
     xlab("") +
-    scale_fill_manual(values = c("PRCR" = "green3", "SD" = "dodgerblue", "PD" = "red3")) +
+    scale_fill_manual(values = c("PRCR" = "darkgreen", "SD" = "orange", "PD" = "red")) +
 #    scale_fill_manual(name = "",
 #                        labels = c("PRCR","SD","PD"),
 #                        values = c("green", "orange","red")) +
@@ -63,49 +67,50 @@ clonality_waterfall = function(dd, clin, ccf.type = "pyclone", threshold = 0.9, 
 # SUMMARY:
 # Updates clonality-specific dataframe, dd
 # ask Nils for details...
-update.clonality = function(dd, threshold = .9) {
-  dd$clonal = rep(0, nrow(dd))
-  dd$clonal[dd$on.ccf > threshold & dd$pre.ccf > threshold] = 'clonal both'
-  dd$clonal[dd$pre.ccf == 0 & dd$on.ccf > threshold] = 'novel clonal in on'
-  dd$clonal[dd$pre.ccf == 0 & dd$on.ccf <= threshold] = 'novel subclonal in on'
-  dd$clonal[dd$on.ccf == 0 & dd$pre.ccf <= threshold] = 'lost subclonal pre2on'
-  dd$clonal[dd$on.ccf == 0 & dd$pre.ccf > threshold] = 'lost clonal pre2on'
-  dd$clonal[dd$clonal == 0] = 'subclonal both'
-  dd$clonal[dd$clonal == 'subclonal both'& dd$on.ccf > threshold & dd$pre.ccf <= threshold] = 'increased pre2on'
-  dd$clonal[dd$clonal == 'subclonal both'& dd$on.ccf <= threshold & dd$pre.ccf > threshold] = 'decreased pre2on'
-  dd$clonal = as.factor(dd$clonal)
-  #dd$neo = as.factor((as.numeric(as.character(dd$pre.is.neo)) + as.numeric(as.character(dd$on.is.neo))) > 0)
-  
-  dd$clonal2 = rep(0, nrow(dd))
-  dd$clonal2[dd$clonal == 'clonal both'] = 'no selection'
-  dd$clonal2[dd$clonal == 'novel clonal in on'] = 'positive selection'
-  dd$clonal2[dd$clonal == 'novel subclonal in on'] = 'positive selection'
-  dd$clonal2[dd$clonal == 'lost subclonal pre2on'] = 'negative selection'
-  dd$clonal2[dd$clonal == 'lost clonal pre2on'] = 'negative selection'
-  dd$clonal2[dd$clonal == 'subclonal both'] = 'no selection'
-  dd$clonal2[dd$clonal == 'increased pre2on'] = 'positive selection'
-  dd$clonal2[dd$clonal == 'decreased pre2on'] = 'negative selection'
-  dd
+update.clonality = function(dd, threshold = .95) {
+        dd$clonal = rep(0, nrow(dd))
+        dd$clonal[is.na(dd$pre.ccf) | is.na(dd$on.ccf)] = NA
+        dd$clonal[dd$on.ccf > threshold & dd$pre.ccf > threshold] = 'clonal both'
+        dd$clonal[dd$pre.ccf == 0 & dd$on.ccf > threshold] = 'novel clonal in on'
+        dd$clonal[dd$pre.ccf == 0 & dd$on.ccf <= threshold] = 'novel subclonal in on'
+        dd$clonal[dd$on.ccf == 0 & dd$pre.ccf <= threshold] = 'lost subclonal pre2on'
+        dd$clonal[dd$on.ccf == 0 & dd$pre.ccf > threshold] = 'lost clonal pre2on'
+        dd$clonal[dd$clonal == 0] = 'subclonal both'
+        dd$clonal[dd$clonal == 'subclonal both'& dd$on.ccf > threshold & dd$pre.ccf <= threshold] = 'increased pre2on'
+        dd$clonal[dd$clonal == 'subclonal both'& dd$on.ccf <= threshold & dd$pre.ccf > threshold] = 'decreased pre2on'
+        dd$clonal = as.factor(dd$clonal)
+
+        dd$clonal2 = rep(NA, nrow(dd))
+        dd$clonal2[dd$clonal == 'clonal both'] = 'no selection'
+        dd$clonal2[dd$clonal == 'novel clonal in on'] = 'positive selection'
+        dd$clonal2[dd$clonal == 'novel subclonal in on'] = 'positive selection'
+        dd$clonal2[dd$clonal == 'lost subclonal pre2on'] = 'negative selection'
+        dd$clonal2[dd$clonal == 'lost clonal pre2on'] = 'negative selection'
+        dd$clonal2[dd$clonal == 'subclonal both'] = 'no selection'
+        dd$clonal2[dd$clonal == 'increased pre2on'] = 'positive selection'
+        dd$clonal2[dd$clonal == 'decreased pre2on'] = 'negative selection'
+        dd
 }
+
 
 # FUNCTION FOR UPDATING CCF
 # Changes which column gets used to store CCF values
-update.ccf = function(dd, ccf.type, threshold, ci = F) {
-  if(ccf.type == 'absolute' ) {
-    dd$on.ccf = dd$on.ccf.abs
-    dd$pre.ccf = dd$pre.ccf.abs
-  }
-  else if (ccf.type == 'pyclone') {
-    if(ci == T) {
-      dd$on.ccf = dd$on.ccf.pyc.ci
-      dd$pre.ccf = dd$pre.ccf.pyc.ci
-    }
-    else{
-      dd$on.ccf = dd$on.ccf.pyc
-      dd$pre.ccf = dd$pre.ccf.pyc
-    }
-  }
-  dd = update.clonality(dd, threshold)
+update.ccf = function(dd, ccf.type, threshold = .95, ci = T) {
+        if(ccf.type == 'absolute' ) {
+                dd$on.ccf = dd$on.ccf.abs
+                dd$pre.ccf = dd$pre.ccf.abs
+        }
+        else if (ccf.type == 'pyclone') {
+                if(ci == T) {
+                        dd$on.ccf = dd$on.ccf.pyc.ci
+                        dd$pre.ccf = dd$pre.ccf.pyc.ci
+                }
+                else{
+                        dd$on.ccf = dd$on.ccf.pyc
+                        dd$pre.ccf = dd$pre.ccf.pyc
+                }
+        }
+        dd = update.clonality(dd, threshold)
 }
 
 # ask Nils...
@@ -138,8 +143,7 @@ make.barplot = function(dd, plot.type, ccf.type, threshold, ci = F, relative = F
   samples = paste(my_class[samples], samples)
   # samples = paste(class(samples), samples)
   idx = order(substr(samples, 1, 2), sample.count)
-  
-  #browser()
+
   if(plot.type == 'clonal') {
     data = sapply(split(as.factor(dd$clonal), dd$sample), table)
     data = data[type.order, idx]
@@ -150,9 +154,8 @@ make.barplot = function(dd, plot.type, ccf.type, threshold, ci = F, relative = F
   if(plot.type == 'selection') {
     data = sapply(split(as.factor(dd$clonal2), dd$sample), table)
     if(relative) data = t(t(data)/colSums(data))
-    #		browser()
     barplot(data[c('positive selection', 'no selection', 'negative selection'), idx], beside = F, col = cc2, las = 2, border = NA)
-    legend('topright', legend = rev(rownames(data[c('positive selection', 'no selection', 'negative selection'),])), fill = rev(cc2))
+    legend('topleft', legend = rev(rownames(data[c('positive selection', 'no selection', 'negative selection'),])), fill = rev(cc2))
   }
 }
 
@@ -172,32 +175,30 @@ make.boxplot = function(dd, plot.type, ccf.type, threshold, ci = F, my_class) {
   sample.count = table(dd$sample)[samples]
   samples = paste(my_class[samples], samples)
   idx = order(substr(samples, 1, 2), sample.count)
-  
+
   data = sapply(split(as.factor(dd$clonal2), dd$sample), table)
   data = t(t(data)/colSums(data))
   colnames(data) = paste(my_class[colnames(data)], colnames(data))
   cl = gsub(' .*', '', colnames(data))
   par(mfrow = c(1,3))
-  #  sapply(rownames(data), function(x) {
-  #    y = split(data[x,], cl); 
-  #    pv1 = round(t.test(y$PD, y$SD, alternative = 'greater')$p.value, digits = 5); 
-  #    pv2 = round(t.test(y$PD, y$SD, alternative = 'less')$p.value, digits = 5); 
-  #    boxplot(list(PRCR = y$PRCR, SD = y$SD, PD = y$PD), border = c('red', 'orange', 'darkgreen'), outline = F, ylim = c(0,1), main = paste(x, ', p.vals = ', pv1, pv2))
-  #  })
+
+
   plot_list = list()
   caption_list = list()
   plot_count = 0
   for (i in rownames(data)) {
     y = split(data[i,], cl)
-    pv1 = round(t.test(y$PD, y$SD, alternative = 'greater')$p.value, digits = 5); 
-    pv2 = round(t.test(y$PD, y$SD, alternative = 'less')$p.value, digits = 5); 
-    p = boxplot(list(PRCR = y$PRCR, SD = y$SD, PD = y$PD), border = c('darkgreen', 'orange', 'red'), outline = F, ylim = c(0,1), main = paste(i, ', p.vals = ', pv1, pv2))
+    pv1 = round(t.test(y$PD, y$SD, alternative = 'greater')$p.value, digits = 5);
+    pv2 = round(t.test(y$PD, y$SD, alternative = 'less')$p.value, digits = 5);
+    label = c('contraction', 'persistence', 'expansion')
+    names(label) = c('negative selection', 'no selection', 'positive selection')
+    p = boxplot(list(PRCR = y$PRCR, SD = y$SD, PD = y$PD), border = c('darkgreen', 'orange', 'red'), outline = F, ylim = c(0,1), main = paste(label[i], ', P_greater: ', round(pv1, digits=2),', P_less: ', round(pv2, digits=2)))
 #    p = boxplot(list(PRCR = y$PRCR, SD = y$SD, PD = y$PD), border = c('red', 'orange', 'darkgreen'), outline = F, ylim = c(0,1), main = paste(i, ', p.vals = ', pv1, pv2))
     #    p = boxplot(list(PRCR = y$PRCR, SD = y$SD, PD = y$PD), border = c('red', 'orange', 'darkgreen'), outline = F, ylim = c(0,1))
     #    cap = paste(i, ', p.vals =', pv1, pv2)
     plot_count = plot_count + 1
     plot_list[[plot_count]] = p
-    #    caption_list[[plot_count]] = cap 
+    #    caption_list[[plot_count]] = cap
   }
   for (i in 1:plot_count) {
     print(plot_list[[i]])
@@ -217,8 +218,8 @@ make.boxplot = function(dd, plot.type, ccf.type, threshold, ci = F, my_class) {
 #' @param my_class - object needed to include patient response data (HACK)
 plot.density = function(dd, sample, ccf.type, threshold, ci = F, my_class) {
   dd = update.ccf(dd, ccf.type, threshold, ci)
-  idx = as.character(dd$sample) == sample 
-  data = cbind(dd$pre.ccf[idx], dd$on.ccf[idx]) 
+  idx = as.character(dd$sample) == sample
+  data = cbind(dd$pre.ccf[idx], dd$on.ccf[idx])
   data = data[rowSums(is.na(data)) == 0,]
   data[,1] = jitter(data[,1])
   data[,2] = jitter(data[,2])
@@ -239,10 +240,10 @@ plot.density = function(dd, sample, ccf.type, threshold, ci = F, my_class) {
 #' @param ci - boolean defining whether or not to use confidence intervals
 alt.survival.plot = function(dd, clin, plot.type, ccf.type, threshold, ci=F, surv_type = 1) {
   dd = update.ccf(dd, ccf.type, threshold, ci)
-  
+
   samples = as.character(unique(dd$sample))
-  
-  # LOOP THROUGH SAMPLES TO CLASSIFY EACH AS GROWING OR SHRINKING  
+
+  # LOOP THROUGH SAMPLES TO CLASSIFY EACH AS GROWING OR SHRINKING
   clin = update.clonal_growth(dd, clin)
   # CREATE MINI CLINICAL TABLE
   my_clin = clin[clin$PatientID.x %in% samples,c("PatientID.x", "SampleType", "OSWK", "OS_event", "PFSWK", "PFS_event", "Clonal_Growth")]
@@ -252,6 +253,6 @@ alt.survival.plot = function(dd, clin, plot.type, ccf.type, threshold, ci=F, sur
   } else {
     surv_obj = clever_gg_surv(my_clin, "PFSWK", "PFS_event", "Clonal_Growth", cut = 0)
   }
-  
+
   return(grid.draw(surv_obj))
 }
