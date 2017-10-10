@@ -2,6 +2,7 @@
 source("ForestFire.R")
 source("ApplyRemoveModule.R")
 source("Make_Diff_GSVA.R")
+
 # SUMMARY:
 # Module creates the page "Genomics and Outcome" tab of the BMS038 companion website.
 # STILL TO DO:
@@ -10,7 +11,8 @@ source("Make_Diff_GSVA.R")
 # UI COMPONENT OF THE Genomics_Outcome MODULE
 #' @param id - namespace identifier for communication between module's UI and server elements
 #' @param choices_list_raw - list of lists formatted like what's in key_columns.R
-Genomics_OutcomeUI = function(id, choices_list_raw) {
+#' @param prediff - text string used to distinguish between "pre" and "on" instances to ensure that bs_accordion has two distinct instances
+Genomics_OutcomeUI = function(id, choices_list_raw, prediff) {
   # DEFINE NAMESPACE TO DISTINGUISH INDIVIDUAL FUNCTION CALLS
   ns = NS(id)
   # USE tagList TO RETURN MULTIPLE UI ELEMENTS
@@ -46,41 +48,55 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
 #                 plotOutput(ns("Response_Plot_2"))
         ),
         tabPanel("Build Your Own Survival Model",
+                 textOutput(ns("BYO_Label")),
                  uiOutput(ns("Choose_Survival_Type_2")),
+                 plotOutput(ns("byoForestPlot")),
+                 bs_accordion(id = prediff) %>%
+                   bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
+                   bs_append(title = "Exome Features", 
+                             content = checkboxGroupInput(ns("Display_Exome"), label = NULL, choices = unname(choices_list_raw[["Exome"]]))) %>%
+                   bs_append(title = "RNA Features",
+                             content = checkboxGroupInput(ns("Display_RNA"), label = NULL, choices = unname(choices_list_raw[["RNASeq"]]))) %>%
+                   bs_append(title = "TCR Features",
+                             content = checkboxGroupInput(ns("Display_TCR"), label = NULL, choices = unname(choices_list_raw[["TCR"]]))) %>%
+                   bs_append(title = "Immune Deconvolution Features",
+                             content = checkboxGroupInput(ns("Display_ImmDec"), label = NULL, choices = unname(choices_list_raw[["Immune Deconvolution"]]))) %>%
+                   bs_append(title = "Immunohistochemistry Features",
+                             content = checkboxGroupInput(ns("Display_IHC"), label = NULL, choices = unname(choices_list_raw[["IHC"]])))
 #                 uiOutput(ns("Choose_BYO_Vars")),
-                 column(4,
-                        checkboxGroupInput(ns("Display_Exome"), 
-                                           "Exome Variables", 
-                                           choices = unname(choices_list_raw[["Exome"]])
-                        ),
-                        checkboxGroupInput(ns("Display_RNA"), 
-                                           "RNASeq Variables", 
-                                           choices = unname(choices_list_raw[["RNASeq"]])
-                        )
-                 ),
-                 column(4,
-                        checkboxGroupInput(ns("Display_TCR"), 
-                                           "TCR Variables", 
-                                           choices = unname(choices_list_raw[["TCR"]])
-                        ),
-                        checkboxGroupInput(ns("Display_ImmDec"), 
-                                           "Immune Deconvolution Variables", 
-                                           choices = unname(choices_list_raw[["Immune Deconvolution"]])
-                        )
-                 ),
-                 column(4,
-                        checkboxGroupInput(ns("Display_IHC"), 
-                                           "IHC Variables", 
-                                           choices = unname(choices_list_raw[["IHC"]])
-                        )
-                 ),
+#                 column(4,
+#                        checkboxGroupInput(ns("Display_Exome"), 
+#                                           "Exome Variables", 
+#                                           choices = unname(choices_list_raw[["Exome"]])
+#                        ),
+#                        checkboxGroupInput(ns("Display_RNA"), 
+#                                           "RNASeq Variables", 
+#                                           choices = unname(choices_list_raw[["RNASeq"]])
+#                        )
+#                 ),
+#                 column(4,
+#                        checkboxGroupInput(ns("Display_TCR"), 
+#                                           "TCR Variables", 
+#                                           choices = unname(choices_list_raw[["TCR"]])
+#                        ),
+#                        checkboxGroupInput(ns("Display_ImmDec"), 
+#                                           "Immune Deconvolution Variables", 
+#                                           choices = unname(choices_list_raw[["Immune Deconvolution"]])
+#                        )
+#                 ),
+#                 column(4,
+#                        checkboxGroupInput(ns("Display_IHC"), 
+#                                           "IHC Variables", 
+#                                           choices = unname(choices_list_raw[["IHC"]])
+#                        )
+#                 ),
                         
 #                 checkboxGroupInput(ns("BYO_Vars"), label = h3("Select Predictive Variables"),
 #                                    choices = list("Mutation Load" = "log10mut", 
 #                                                   "Subtype" = "Subtype",
 #                                                   "B.cells.naive" = "B.cells.naive",
 #                                                   "B.cells.memory" = "B.cells.memory"), selected = "log10mut"),
-                 plotOutput(ns("byoForestPlot"))
+#                 plotOutput(ns("byoForestPlot"))
 #                 plotOutput(ns("byoSurv_Plot"))
                  )
         ),
@@ -102,10 +118,8 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
   Saved_GSVA_Values = reactive({
     # Start with an empty data.frame
     out_data = data.frame()
-    # Condense GSVA values from my_gsva when there are named entries in it
-#    if (names(my_gsva) > 0) {
-      out_data = do.call("rbind", lapply(reactiveValuesToList(my_gsva), function(x) as.data.frame(t(x[[4]]))))
-#    }
+    # Condense GSVA values from my_gsva (depends on pre-defined values when portal loads)
+    out_data = do.call("rbind", lapply(reactiveValuesToList(my_gsva), function(x) as.data.frame(t(x[[4]]))))
     out_data = as.data.frame(t(out_data))
     # Process Delta values if necessary
     if (nrow(out_data) > 0 & nrow(predat) == 62) {
@@ -119,48 +133,33 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
   })
   choices_list = reactive({
     out_list = choices_list_raw
-#    if (length(names(my_gsva)) > 0) {
-      # Define new list of variables based on Saved_GSVA_Values
-      new_vals = names(Saved_GSVA_Values())
-#      delt_vals = paste("delt", new_vals, sep=".")
-#      if (nrow(predat) == 62) { new_vals = delt.vals}
-      # Change names if in "DIFF" tab
-#      if (nrow(predat) == 62) {
-#        new_vals = paste("delt", new_vals, sep=".")
-#      }
-#      print(class(new_vals))
-#      print(new_vals)
-#      print(class(delt_vals))
-#      print(delt_vals)
-      new_list = list(new_vals)
-      names(new_list[[1]]) = new_vals
-      # Append choices_list with these values
-      list_pos = length(out_list)+1
-      out_list[[list_pos]] = unlist(new_list)
-      names(out_list)[list_pos] = "User-Defined GSVA"
-#    }
+    # Define new list of variables based on Saved_GSVA_Values
+    new_vals = names(Saved_GSVA_Values())
+    new_list = list(new_vals)
+    names(new_list[[1]]) = new_vals
+    # Append choices_list with these values
+    list_pos = length(out_list)+1
+    out_list[[list_pos]] = unlist(new_list)
+    names(out_list)[list_pos] = "User-Defined GSVA"
     return(out_list)
   })
   my_data_raw = callModule(ApplyRemove, "INNER", filterdata(), predat)
   my_data = reactive({
     out_data = my_data_raw()
-#    if (length(names(my_gsva)) > 0) {
-      gsva_data = Saved_GSVA_Values()
-      # check column names...
-      # Merge as by 'PatientIDx' if you're working with DIFF samples
-      if (nrow(predat) == 62) {
-        gsva_data$PatientID.x = rownames(gsva_data)
-        out_data = merge(out_data, gsva_data, by = "PatientID.x", all.x = TRUE)
-      } else {
-        gsva_data$Sample = rownames(gsva_data)
-        out_data = merge(out_data, gsva_data, by = "Sample", all.x = TRUE)
-      }
-#      print(head(out_data[,c("Sample","delt.aDC")]))
-#      print(dim(out_data))
-#      print(head(names(out_data)))
-#      print(tail(names(out_data)))
-#    }
+    gsva_data = Saved_GSVA_Values()
+    # check column names...
+    # Merge as by 'PatientIDx' if you're working with DIFF samples
+    if (nrow(predat) == 62) {
+      gsva_data$PatientID.x = rownames(gsva_data)
+      out_data = merge(out_data, gsva_data, by = "PatientID.x", all.x = TRUE)
+    } else {
+      gsva_data$Sample = rownames(gsva_data)
+      out_data = merge(out_data, gsva_data, by = "Sample", all.x = TRUE)
+    }
     return(out_data)
+  })
+  output$BYO_Label = renderText({
+    paste("Expand your chosen genomic feature, ", input$Sec_Var,", into a multivariate model using the check boxes below this plot", sep = "")
   })
   output$debug_Text = renderText({
     huh = names(my_gsva)
@@ -198,7 +197,13 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
     }
     # set min on range to 0 if no negative #'s
     if (minv > 0 ) { minv <- 0 }
-    sliderInput(ns("slider_value"), label = h4("Bisect Patients into Two Groups for Analysis"), min = minv, max = maxv, value = c(minv, middle_val), round = -5)
+    # 
+#    minv = round(minv, digits = 2)
+#    middle_val = round(middle_val, digits = 2)
+#    maxv = round(maxv, digits = 2)
+#    medv = round(medv, digits = 2)
+#    if (minv < 0) { minv <- minv -0.5; minv <- round(minv, digits=0)}
+    sliderInput(ns("slider_value"), label = h4("Bisect Patients into Two Groups for Analysis"), min = minv, max = maxv, value = c(minv, middle_val), round = -2)
   })
   # SLIDER-CONTROLLED HISTOGRAM
   output$Cutpoint_Hist = renderPlot({
@@ -214,7 +219,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
   output$Choose_Survival_Type_2 = renderUI({
     radioButtons(ns("Survival_Type_2"), label = "Outcome to Analyze:", choices = list("Overall Survival (OS)" = "OS", "Progression Free Survival (PFS)" = "PFS"), inline=TRUE, selected = "OS")
   })
-  # CONDENSE VARIABLES INTO MODEL
+  # CONDENSE VARIABLES INTO BYO-SURVIVAL MODEL
   ExomeID = reactive({
     my_pos = which(choices_list()[["Exome"]] %in% input$Display_Exome)
     tid = names(choices_list()[["Exome"]])[my_pos]
