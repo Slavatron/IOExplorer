@@ -42,9 +42,6 @@ CrossTabUI <- function(id, choices_list) {
       sidebarPanel(
 #        textOutput(ns("debugText")),
         wellPanel(
-          ApplyRemoveUI(ns("INNER"))
-        ),
-        wellPanel(
 #          selectInput(ns("genomicSpace_Y"), "Y-Axis Genomic Space:", choices = names(choices_list)),
           uiOutput(ns("cross_First")),
           uiOutput(ns("cross_Second")),
@@ -69,7 +66,8 @@ CrossTabUI <- function(id, choices_list) {
                    "This graphic displays the relative correlations between the full set of variables selected using the drop-down menus.",
                    plotOutput(ns("corr_plot"))
                    )
-        )
+        ),
+        ApplyRemoveUI(ns("INNER"))
       ) 
     )
   )
