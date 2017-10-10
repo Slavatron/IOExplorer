@@ -224,12 +224,12 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     out_dat = subGenes()
     out_dat$Mean = apply(num_dat, 1, mean)
     out_dat$Median = apply(num_dat, 1, median)
-    out_dat$Standard_Deviation = apply(num_dat, 1, sd)
+    out_dat$Std_Dev = apply(num_dat, 1, sd)
     # Round down to 4 digits 
     out_dat$Mean = round(out_dat$Mean, digits = 4)
     out_dat$Median = round(out_dat$Median, digits = 4)
-    out_dat$Standard_Deviation = round(out_dat$Standard_Deviation, digits = 4)
-    out_dat = out_dat[,c("Mean", "Median", "Standard_Deviation")]
+    out_dat$Std_Dev = round(out_dat$Std_Dev, digits = 4)
+    out_dat = out_dat[,c("Mean", "Median", "Std_Dev")]
     # Add annotations indicating how each gene was selected
     if (nrow(out_dat) > 0) {
       out_dat$Selection_Method = ""
