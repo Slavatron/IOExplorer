@@ -40,9 +40,9 @@ Genomics_OutcomeUI = function(id, choices_list_raw) {
                  tableOutput(ns("my_Table"))
         ),
         tabPanel("Response",
-                 plotOutput(ns("Response_Plot")),
-                 p(),
-                 plotOutput(ns("Response_Plot_2"))
+                 plotOutput(ns("Response_Plot"))
+#                 p(),
+#                 plotOutput(ns("Response_Plot_2"))
         ),
         tabPanel("Build Your Own Survival Model",
                  uiOutput(ns("Choose_Survival_Type_2")),
