@@ -121,6 +121,7 @@ GeneExprUI = function(id, choices_list) {
 #          wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")
 #        ),
         tabPanel("Heatmap",
+#                 ApplyRemoveUI(ns("INNER")),
 #                 h3("Choose Heatmap Annotations"),
 #                 h2("Patients will be sorted by annotations"),
                  column(3,
@@ -135,15 +136,18 @@ GeneExprUI = function(id, choices_list) {
        "Cytolytic Score" = "cytscore"))),
                   column(3,
                   selectInput(ns("Anno_B"), "Annotation B:", choices = list("None" = "None", "Subtype" = "SubtypeEZ", "Clonal Mutation Load" = "thresh95.muts"))),
-          plotOutput(ns("HeatMap"))
-          
+##          plotOutput(ns("HeatMap")) 
+#          p(),
+          uiOutput(ns("Sized_Plot")),
+          ApplyRemoveUI(ns("INNER"))
         )
       )
+#      ApplyRemoveUI(ns("INNER"))
     )
   )
 }
 
-GeneExpr = function(input, output, session, choices_list, my_data) {
+GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) {
   ns = session$ns
 #### PROCESS INPUT TEXT
   text_input = reactive({
@@ -378,6 +382,8 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
   })
 
 #### HEATMAP...
+  # Process input data to either be filtered or not
+  my_data = callModule(ApplyRemove, "INNER", filterdata(), fulldata)
   output$HeatMap = renderPlot({
     # Load data for Annotation and Expression
     heatmap_annot <- my_data()[which(my_data()$Sample %in% c(colnames(preX), colnames(onX))), ]
@@ -450,7 +456,12 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     j = paste(j, collapse = ";")
 #    make_heatmap(this_xdat, this_annot, j, ann_colors)
     make_heatmap(this_xdat, this_annot, 'Gene Expression', ann_colors)
-  }, width = 1000, height = 800, res = 90)  
+  }, width = 1000, height = 700, res = 90)
+
+  # Make Heatmap plot a UI element so it's size is known to Shiny...
+  output$Sized_Plot = renderUI({
+    plotOutput(ns("HeatMap"), width = 1000, height = 800)
+  })
   # RETURN REACTIVE VALUE FOR USE BY OTHER MODULES
   return(Saved_Gene_Sets)
 }

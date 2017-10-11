@@ -102,6 +102,6 @@ shinyServer(function(input, output) {
 
   callModule(TCR_Freq_Dist, "Test")
 
-  myGSVA = callModule(GeneExpr, "EXPR", pre_choice1, Filt_Full)
+  myGSVA = callModule(GeneExpr, "EXPR", pre_choice1, Filt_Full, full_dat)
 
 })

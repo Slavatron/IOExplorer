@@ -73,7 +73,8 @@ ApplyRemove = function(input, output, session, filt_dat, full_dat) {
     paste("Filters are", Filters_OnOff$Check)
   })
   output$Filter_Count = renderText({
-    my_dim = nrow(TheDat())
+#    my_dim = nrow(TheDat())
+    my_dim = length(unique(TheDat()$PatientID.x))
     paste("(n =", my_dim, "patients)")
   })
   return(TheDat)
