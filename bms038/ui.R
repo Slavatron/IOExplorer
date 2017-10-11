@@ -37,37 +37,22 @@ hPanel <- headerPanel(
     hr())
 )
 
-#tabui <- tabsetPanel(tabPanel("Pre Rx & Outcome",pre_ui),
-#    tabPanel("Clonality Analysis", clone_ui),
-#    tabPanel("Change on Rx & Outcome", diff_ui),
-#    tabPanel("Gene Expression", gene_exp_ui),
-#    tabPanel("TCR Analysis", tcr_ui),
-#    tabPanel("Cross Correlation", cross_ui),
-#    tabPanel("Neo-antigen Analysis", neoantigen_ui)
-#)
-#ui <- fluidPage(hPanel, tabui)
 
 ui<-navbarPage("BMS038", 
 # PATIENT SELECTION MIGHT NEED TO BE THE FIRST TAB IF OTHER TABS USE ITS OUTPUT
            tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", pre_choice1)),
 
            navbarMenu("Genomics & Outcome", 
-#                      tabPanel("Pre-therapy",pre_ui),
                       tabPanel("Pre-therapy", Genomics_OutcomeUI("PRE", pre_choice1, "pre")),
-#                      tabPanel("Change on therapy", diff_ui)),
                       tabPanel("Change on therapy", Genomics_OutcomeUI("DIFF", diff_choice1, "diff"))),
-#           tabPanel("Clonality", clone_ui),
-           tabPanel("Clonality", ClonalityUI("CLONE")),
            navbarMenu("Correlation",
-#                         tabPanel("Pre-therapy", cross_ui),
                          tabPanel("Pre-therapy", CrossTabUI("CROSS", pre_choice1)),
-#                         tabPanel("Change on therapy", cross_diff_ui)),
                          tabPanel("Change on therapy", CrossTabUI("CROSSDIFF", diff_choice1))),
-#           tabPanel("Gene Expr", gene_exp_ui),
-	   tabPanel("Gene Expr", GeneExprUI("EXPR", pre_choice1)),	
+     	     tabPanel("Gene Expr", GeneExprUI("EXPR", pre_choice1)),
+           tabPanel("Clonality", ClonalityUI("CLONE")),
+
            tabPanel("TCR", TCR_Freq_DistUI("Test")),
 #           tabPanel("Neo-antigens", neoantigen_ui),
-#           tabPanel("Select Patients", Selection_ModuleUI("GLOBAL", DEMO_LIST)),
            header=hPanel
            )
   
