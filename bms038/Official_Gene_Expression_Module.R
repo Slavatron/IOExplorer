@@ -81,7 +81,7 @@ GeneExprUI = function(id, choices_list) {
   ns = NS(id)
   tagList(
     sidebarPanel(width = 3,
-        h3("Gene Selection"),
+        h3("Select Genes"),
         textInput(ns("GeneText"), label = "Input Genes as Text", width = '100%'),
         textOutput(ns("BadFeedback")),
         selectInput(ns("Pathways"), "Select Genes by Pathway", choices = c(Type_Names)),
@@ -92,17 +92,27 @@ GeneExprUI = function(id, choices_list) {
         uiOutput(ns("Pathway_Boxes"))
       ),
     mainPanel(width = 9,
+      h3("Gene Expression Analysis"),
+      "Gene expression for any combination of genes can be examined using the tools found here. Construct your gene sets using the text-input option (with at least one space between each gene) or select genes from known immune pathways. To visualize expression alongside other clinical/genomic features across available patients, use the Heatmap option.",
+      p(),
+      "Run GSVA on your gene set to create representative variables that can be examined on the 'Correlation' and 'Genomics & Outcome' tabs.",
+      p(),
       tabsetPanel(
         tabPanel("Gene Selection",
           textOutput(ns("debugText")),
           fluidRow(
-            column(6,textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set")),
-            column(6,
-#                   "Run GSVA if you want to save gene sets...",
-                   actionButton(ns("RunGSVA"), "Run GSVA Analysis and Save"))
+            column(5,
+                   textInput(ns("GeneSetName"), "Save Gene Set As:", "My_Gene_Set")),
+#                   tableOutput(ns("Selection_Table"))),
+            column(7,
+                   h3(""),
+                   actionButton(ns("RunGSVA"), "Run GSVA Analysis and Save", style = "color: black; background-color: #ffd700"))
+#                   actionButton(ns("RunGSVA"), "Run GSVA Analysis and Save", style = "color: white; background-color: #076f30"))
+#                   p(),
+#                   tableOutput(ns("GSVA_Table"))
           ),
-          column(6, tableOutput(ns("Selection_Table"))),
-          column(6, tableOutput(ns("GSVA_Table")))
+          column(5, tableOutput(ns("Selection_Table"))),
+          column(7, tableOutput(ns("GSVA_Table")))
 #          column(6,wellPanel(DT::dataTableOutput(ns("Selection_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px")),
 #          column(6,wellPanel(DT::dataTableOutput(ns("GSVA_Table")), style = "overflow-x:scroll; max-width: 1000px; overflow-y:scroll; max-height: 600px"))
 #          actionButton(ns("SaveGeneSet"), "Save Gene Set")        
@@ -172,7 +182,7 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
   # Buttons for Applying and Removing Filters
   output$AddGenesButton = renderUI({
     if (AddRemoveGenes$Check == "ON" & length(setdiff(input$ChosenPathwayGenes, myGenes$Check)) >0) {
-      actionButton(ns("AddGenes"), label = "Add These Genes Too", style = "color: white; background-color: #ff8866")
+      actionButton(ns("AddGenes"), label = "Add These Genes Too?", style = "color: white; background-color: #ff8866")
     } else if (AddRemoveGenes$Check == "ON" & length(setdiff(input$ChosenPathwayGenes, myGenes$Check)) == 0) {
       actionButton(ns("AddGenes"), label = "Genes Added", style = "color: white; background-color: #0000ff")
     } else {
@@ -223,21 +233,22 @@ GeneExpr = function(input, output, session, choices_list, my_data) {
     num_dat = subGenes()[,grep("Pt",names(subGenes()))]
     out_dat = subGenes()
     out_dat$Mean = apply(num_dat, 1, mean)
-    out_dat$Median = apply(num_dat, 1, median)
+#    out_dat$Median = apply(num_dat, 1, median)
     out_dat$Std_Dev = apply(num_dat, 1, sd)
     # Round down to 4 digits 
     out_dat$Mean = round(out_dat$Mean, digits = 4)
-    out_dat$Median = round(out_dat$Median, digits = 4)
+#    out_dat$Median = round(out_dat$Median, digits = 4)
     out_dat$Std_Dev = round(out_dat$Std_Dev, digits = 4)
-    out_dat = out_dat[,c("Mean", "Median", "Std_Dev")]
+#    out_dat = out_dat[,c("Mean", "Median", "Std_Dev")]
+    out_dat = out_dat[,c("Mean", "Std_Dev")]
     # Add annotations indicating how each gene was selected
     if (nrow(out_dat) > 0) {
-      out_dat$Selection_Method = ""
+      out_dat$Select_By = ""
       if (length(text_input()[[2]]) > 0) {
-        out_dat[text_input()[[2]],]$Selection_Method = "Typed"
+        out_dat[text_input()[[2]],]$Select_By = "Typed"
       }
       if (length(myGenes$Check) > 0) {
-        out_dat[myGenes$Check,]$Selection_Method = "Pathway"
+        out_dat[myGenes$Check,]$Select_By = "Pathway"
       }
     }
     return(out_dat)
