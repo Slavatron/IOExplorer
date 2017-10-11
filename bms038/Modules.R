@@ -162,8 +162,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
     paste("Expand your chosen genomic feature, ", input$Sec_Var,", into a multivariate model using the check boxes below this plot", sep = "")
   })
   output$debug_Text = renderText({
-    huh = names(my_gsva)
-    length(huh)
+    "NOTHING TO DEBUG?"
 #    class(Saved_GSVA_Values())
   })
   output$First_Choice = renderUI({
@@ -185,6 +184,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
   })
   # SLIDER FOR DEFINING CUT-POINT
   output$Hist_Slider = renderUI({
+    req(length(getID()) > 0)
     medv = median(my_data()[,getID()], na.rm = TRUE)
     meanv = mean(my_data()[,getID()], na.rm = TRUE)
     minv = min(my_data()[,getID()], na.rm = TRUE)

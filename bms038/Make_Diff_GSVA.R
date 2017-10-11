@@ -19,6 +19,7 @@ make_diff_gsva = function(df) {
     rownames(out_dat) = my_rows
     names(out_dat) = paste("delt",names(df), sep=".")
   } else {
+    rownames(out_dat) = my_rows
     out_dat = out_dat[,-1]
   }
   return(out_dat)
