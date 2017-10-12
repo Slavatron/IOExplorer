@@ -12,8 +12,18 @@ require(plotly)
 library(GSVA)
 ####################################################################
 #
-# 
-
+#' Function for collapsing list of named variable vectors into a single character vector
+#' @param my_list - a list of named variables structured like: "VariableName" = "Display Name"; meant to be used with lists defined in key_columns.R
+Expand_Variable_List = function(my_list) {
+  out_vect = c()
+  for (i in names(my_list)) {
+    n = names(my_list[[i]])
+    v = unname(my_list[[i]])
+    names(n) = v
+    out_vect = c(out_vect, n)
+  }
+  return(out_vect)
+}
 # READ IN PATHWAYS ARRAY
 source("Parsed_GSEA_Sets.R")
 #source("Alexis_Genes_Parsed.R")
@@ -129,13 +139,15 @@ GeneExprUI = function(id, choices_list) {
                  column(3,
                  selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation A", "Annotation B"))),
                  column(3,
-                 selectInput(ns("Anno_A"), "Annotation A", choices = list("UV Signature" = "Signature.7",
-       "Mutation Load (log)" = "log10mut",
-       "Subtype" = "SubtypeEZ",
-       "Clonal Mutation Load" = "thresh95.muts",
-       "Cytolytic Score" = "cytscore"))),
+                        selectInput(ns("Anno_A"), "Annotation A", choices = Expand_Variable_List(choices_list))),
+#                 selectInput(ns("Anno_A"), "Annotation A", choices = list("UV Signature" = "Signature.7",
+#       "Mutation Load (log)" = "log10mut",
+#       "Subtype" = "SubtypeEZ",
+#       "Clonal Mutation Load" = "thresh95.muts",
+#       "Cytolytic Score" = "cytscore"))),
                   column(3,
-                  selectInput(ns("Anno_B"), "Annotation B:", choices = list("None" = "None", "Subtype" = "SubtypeEZ", "Clonal Mutation Load" = "thresh95.muts"))),
+                   selectInput(ns("Anno_B"), "Annotation B:", choices = c("None" = "None", Expand_Variable_List(choices_list)))),
+#                  selectInput(ns("Anno_B"), "Annotation B:", choices = list("None" = "None", "Subtype" = "SubtypeEZ", "Clonal Mutation Load" = "thresh95.muts"))),
 ##          plotOutput(ns("HeatMap")) 
 #          p(),
           uiOutput(ns("Sized_Plot")),
