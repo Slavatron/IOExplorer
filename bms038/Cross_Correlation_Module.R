@@ -104,10 +104,12 @@ CrossTab <- function(input, output, session, choices_list_raw, filt_data, full_d
     # Start with an empty data.frame
     out_data = data.frame()
     # Condense GSVA values from my_gsva when there are named entries in it
-    if (names(my_gsva) > 0) {
-      out_data = do.call("rbind", lapply(reactiveValuesToList(my_gsva), function(x) as.data.frame(t(x[[4]]))))
-    }
+    out_data = do.call("rbind", lapply(reactiveValuesToList(my_gsva), function(x) as.data.frame(t(x[[4]]))))
     out_data = as.data.frame(t(out_data))
+    # Process Delta values if necessary
+    if (nrow(out_data) > 0 & nrow(full_data) == 62) {
+      out_data = make_diff_gsva(out_data)
+    }
     return(out_data)
   })
   choices_list = reactive({
@@ -130,11 +132,15 @@ CrossTab <- function(input, output, session, choices_list_raw, filt_data, full_d
   my_data_raw = callModule(ApplyRemove, "INNER", filt_data(), full_data)
   my_data = reactive({
     out_data = my_data_raw()
-    if (length(names(my_gsva)) > 0) {
-      gsva_data = Saved_GSVA_Values()
-      # check column names...
+    gsva_data = Saved_GSVA_Values()
+    # check column names...
+    # Merge as by 'PatientIDx' if you're working with DIFF samples
+    if (nrow(full_data) == 62) {
+      gsva_data$PatientID.x = rownames(gsva_data)
+      out_data = merge(out_data, gsva_data, by = "PatientID.x", all.x = TRUE)
+    } else {
       gsva_data$Sample = rownames(gsva_data)
-      out_data = merge(out_data, gsva_data, by = "Sample")
+      out_data = merge(out_data, gsva_data, by = "Sample", all.x = TRUE)
     }
     return(out_data)
   })
@@ -151,7 +157,7 @@ CrossTab <- function(input, output, session, choices_list_raw, filt_data, full_d
   })
   
   output$cross_First_2 = renderUI({
-    selectInput(ns("genomicSpace_X"), "X-Axis Genomic Space:", choices = names(choices_list()))
+    selectInput(ns("genomicSpace_X"), "X-Axis Genomic Space:", choices = names(choices_list()), selected = names(choices_list())[2])
   })
   output$cross_Second_2 = renderUI( {
     req(input$genomicSpace_X)
