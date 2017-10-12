@@ -26,7 +26,7 @@ source("Cross_Correlation_Module.R")
 source("Clonality_Graphs.R")
 source("Clonality_Module.R")
 source("TCR_Module.R")
-
+source("AboutModule.R")
 
 # READ IN FILE
 #predat = read.csv("bms038_data_122016.csv")
@@ -101,7 +101,7 @@ shinyServer(function(input, output) {
   callModule(Clonality, "CLONE", dd, clin)
 
   callModule(TCR_Freq_Dist, "Test")
-
+  callModule(About, "About_Page")
   myGSVA = callModule(GeneExpr, "EXPR", pre_choice1, Filt_Full, full_dat)
 
 })

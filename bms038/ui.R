@@ -13,7 +13,7 @@ source("Cross_Correlation_Module.R")
 source("Clonality_Module.R")
 source("TCR_Module.R")
 source("Official_Gene_Expression_Module.R")
-
+source("AboutModule.R")
 options(bitmapType='cairo')
 
 
@@ -52,6 +52,7 @@ ui<-navbarPage("BMS038",
            tabPanel("Clonality", ClonalityUI("CLONE")),
 
            tabPanel("TCR", TCR_Freq_DistUI("Test")),
+	   tabPanel("About", AboutUI("About_Page")),
 #           tabPanel("Neo-antigens", neoantigen_ui),
            header=hPanel
            )

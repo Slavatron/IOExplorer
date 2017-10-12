@@ -52,14 +52,14 @@ forestfire = function(df, s_type = "OS", p1, ...) {
   cox_coef = as.data.frame(cox_summary$coefficients)
   text_table$Pval = round(cox_coef[,5], digits = 5)
   tabletext <- cbind(c("Predictor",text_table$Pred), 
-                     c("Patients Lacking Data",text_table$NA_Count), 
+#                     c("Patients Lacking Data",text_table$NA_Count), 
                      c("P Value",text_table$Pval))
   cox_conf.int = as.data.frame(cox_summary$conf.int)
   names(cox_conf.int) = c("HR", "negHR", "LCI", "UCI")
   cox_conf.int$Pval = cox_coef[,5]
   pred_names = list(list(p1, ...))
   # Produce Forest Plot
-  fplot = forestplot(labeltext = tabletext, 
+  fplot = forestplot(labeltext = tabletext,
                      mean = c(NA, as.numeric(cox_conf.int$HR)), 
                      lower = c(NA, as.numeric(cox_conf.int$LCI)), 
                      upper = c(NA, as.numeric(cox_conf.int$UCI)),
@@ -68,16 +68,17 @@ forestfire = function(df, s_type = "OS", p1, ...) {
                      txt_gp=fpTxtGp(label=gpar(cex=1.25),
                                     ticks=gpar(cex=1.1),
                                     xlab=gpar(cex = 1.2),
-                                    title=gpar(cex = 1.2))
-#                     col=fpColors(box="black", lines="black", zero = "gray50"),
-#                     zero=1, 
-#                     cex=0.9, 
-#                     lineheight = "auto", 
-#                     boxsize=0.4, 
-#                     colgap=unit(6,"mm"),
-#                     lwd.ci=2, 
-#                     ci.vertices=TRUE, 
-#                     ci.vertices.height = 0.3
+                                    title=gpar(cex = 1.2)),
+                     col=fpColors(box="black", lines="black", zero = "gray50"),
+                     zero=1, 
+                     cex=0.9, 
+                     lineheight = "auto", 
+                     xlog = TRUE,
+                     boxsize=0.3, 
+                     colgap=unit(6,"mm"),
+                     lwd.ci=2, 
+                     ci.vertices=TRUE, 
+                     ci.vertices.height = 0.3
                      )
   return(fplot)
 }
