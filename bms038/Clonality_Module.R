@@ -25,6 +25,7 @@ ClonalityUI = function(id) {
     mainPanel(
       h3("Clonality Changes in response to Ipilimumab treatment"),
       "Clonality changes were measured using cancer cell fraction (CCF) estimates to compare the relative abundance of single-nucleotide variations (SNV) detected in the pre-treatment and on-treatment samples. Pyclone and Absolute were used to estimate CCF, and produced similar results. Based on before- and after-treatment CCF, each unique SNV was categorized as one of eight clonal event types (displayed in 'Clonality Barplot') that contribute to either genomic expansion, contraction or persistence.",
+      p(),
 #      "Here you can visualize clonality changes in response to Ipilimumab treatment.",
       tabsetPanel(
         tabPanel("Clonality Barplot",
@@ -54,14 +55,18 @@ were significantly more frequent in patients with PD than SD. Data are presented
 #                 plotOutput(ns("Survival_Plot"))
 #        ),
         tabPanel("Density Plot",
-                 fluidRow(
+                 "Changes in CCF between pre- and on-treatment samples. Individual SNVs are represented as points on the graph with the X and Y axes indicating their prevalence in the pre-treatment and on-treatment samples. SNVs in the top-right corner were highly prevalent before and after treatment, SNVs in the bottom-right corner decreased or disappeared after treatment and the top-left corner consists of SNVs that were prevalent after treatment but rare or absent before treatment.",
+                 p(),
+#                 fluidRow(
 #                   column(4, uiOutput(ns("density_patient_selection"))),
-                   column(8, "Changes in CCF between pre- and on-treatment samples. Individual SNVs are represented as points on the graph with the X and Y axes indicating their prevalence in the pre-treatment and on-treatment samples. SNVs in the top-right corner were highly prevalent before and after treatment, SNVs in the bottom-right corner decreased or disappeared after treatment and the top-left corner consists of SNVs that were prevalent after treatment but rare or absent before treatment."),
-#                   updateCheckboxInput(ns("CI"), value = F),
-                   column(4, uiOutput(ns("density_patient_selection")))
-                 ),
+#                   column(8, "Changes in CCF between pre- and on-treatment samples. Individual SNVs are represented as points on the graph with the X and Y axes indicating their prevalence in the pre-treatment and on-treatment samples. SNVs in the top-right corner were highly prevalent before and after treatment, SNVs in the bottom-right corner decreased or disappeared after treatment and the top-left corner consists of SNVs that were prevalent after treatment but rare or absent before treatment."),
+#                   column(4, uiOutput(ns("density_patient_selection")))
+#                 ),
 #                 "<Explain how to read interpret these plots>",
-                 plotOutput(ns("Density_Plot"))
+                 fluidRow(
+                   column(3, uiOutput(ns("density_patient_selection"))),
+                   column(9,plotOutput(ns("Density_Plot"), width = 600, height = 600))
+                 )
 #                 wellPanel(
 #                   uiOutput(ns("density_patient_selection"))
 #                 )
