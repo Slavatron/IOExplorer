@@ -7,21 +7,38 @@ Selection_ModuleUI = function(id, choices_list) {
   ns = NS(id)
   tagList(
     sidebarPanel(width = 3,
-                 h3("Filter The Dataset"),
-#                 uiOutput(ns("apply_Filters")),
-#                 uiOutput(ns("Filters_On_Button")),
-#                 uiOutput(ns("Filters_Off_Button")),
-                 bs_accordion(id = "beatles") %>%
-  bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
-  bs_append(title = "Cohort", 
-            content = checkboxGroupInput(ns("Cohort"), label = NULL, choices = c("NIV3-NAIVE", "NIV3-PROG"))) %>%
-  bs_append(title = "Melanoma Subtype", content = checkboxGroupInput(ns("Subtype"), label = NULL, choices = c("BRAF" = "1", "RAS" = "2", "NF1" = "3", "TripleWt" = "4"))) %>%
-  bs_append(title = "Pre-Treatment Exome Sequenced", content = checkboxGroupInput(ns("Pre_Exome"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
-  bs_append(title = "On-Treatment Exome Sequenced", content = checkboxGroupInput(ns("On_Exome"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
-  bs_append(title = "Pre-Treatment RNA Sequenced", content = checkboxGroupInput(ns("Pre_RNA"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
-  bs_append(title = "On-Treatment RNA Sequenced", content = checkboxGroupInput(ns("On_RNA"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
-  bs_append(title = "TCR Data Available", content = checkboxGroupInput(ns("Has_TCR"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
-  bs_append(title = "Response", content = checkboxGroupInput(ns("Response"), label=NULL, choices = c("PRCR", "SD", "PD")))
+                 tabsetPanel(
+                   tabPanel("Add Features",
+                            "Select clinical/genomic features to display",
+                            bs_accordion(id = "Display") %>%
+                              bs_set_opts(panel_type = "info", use_heading_link = TRUE) %>%
+                              bs_append(title = "Exome", 
+                                        content = checkboxGroupInput(ns("Display_Exome"), label = NULL, choices = unname(choices_list[["Exome"]]))) %>%
+                              bs_append(title = "RNASeq",
+                                        content = checkboxGroupInput(ns("Display_Exome"), label=NULL, choices=unname(choices_list[["RNASeq"]]))) %>%
+                              bs_append(title = "TCR Features",
+                                        content = checkboxGroupInput(ns("Display_TCR"), label = NULL, choices = unname(choices_list[["TCR"]]))) %>%
+                              bs_append(title = "Immune Deconvolution",
+                                        content = checkboxGroupInput(ns("Display_ImmDec"), label = NULL, choices = unname(choices_list[["Immune Deconvolution"]]))) %>%
+                              bs_append(title = "Immunohistochemistry Features",
+                                        content = checkboxGroupInput(ns("Display_IHC"), label = NULL, choices = unname(choices_list[["IHC"]])))
+                            ),
+                   tabPanel("Define Filters",
+                            "Select filters to subset data for analysis",
+                            bs_accordion(id = "beatles") %>%
+                              bs_set_opts(panel_type = "default", use_heading_link = TRUE) %>%
+                              bs_append(title = "Cohort", 
+                                        content = checkboxGroupInput(ns("Cohort"), label = NULL, choices = c("NIV3-NAIVE", "NIV3-PROG"))) %>%
+                              bs_append(title = "Melanoma Subtype", content = checkboxGroupInput(ns("Subtype"), label = NULL, choices = c("BRAF" = "1", "RAS" = "2", "NF1" = "3", "TripleWt" = "4"))) %>%
+                              bs_append(title = "Pre-Treatment Exome Sequenced", content = checkboxGroupInput(ns("Pre_Exome"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+                              bs_append(title = "On-Treatment Exome Sequenced", content = checkboxGroupInput(ns("On_Exome"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+                              bs_append(title = "Pre-Treatment RNA Sequenced", content = checkboxGroupInput(ns("Pre_RNA"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+                              bs_append(title = "On-Treatment RNA Sequenced", content = checkboxGroupInput(ns("On_RNA"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+                              bs_append(title = "TCR Data Available", content = checkboxGroupInput(ns("Has_TCR"), label=NULL, choices = c("Yes" = "1", "No" = "0"))) %>%
+                              bs_append(title = "Response", content = checkboxGroupInput(ns("Response"), label=NULL, choices = c("PRCR", "SD", "PD")))
+                            
+                            )
+                 )
     ),
     mainPanel(width = 9,
               h3("Summary Table"),
@@ -32,35 +49,8 @@ Selection_ModuleUI = function(id, choices_list) {
               conditionalPanel(paste0("input['", ns("table_rows_selected"), "'].length > '0'"),
                                # CHECK BOX TO ALLOW FURTHER FILTRATION BY INDIVIDUAL ROWS
                                # (note that this filtering mechanism might fuck up if the table has been re-ordered)
-                               uiOutput(ns("apply_table_filters"))),
-              # CHECKBOX FOR COLUMNS TO DISPLAY
-              h3("Add Columns to the Display Table"),
-              column(4,
-                checkboxGroupInput(ns("Display_Exome"), 
-                                   "Display Exome Data", 
-                                   choices = unname(choices_list[["Exome"]])
-                                   ),
-                checkboxGroupInput(ns("Display_RNA"), 
-                                   "Display RNASeq Data", 
-                                   choices = unname(choices_list[["RNASeq"]])
-                )
-                ),
-                column(4,
-                       checkboxGroupInput(ns("Display_TCR"), 
-                                          "Display TCR Data", 
-                                          choices = unname(choices_list[["TCR"]])
-                       ),
-                       checkboxGroupInput(ns("Display_ImmDec"), 
-                                          "Display Immune Deconvolution Data", 
-                                          choices = unname(choices_list[["Immune Deconvolution"]])
-                       )
-                ),
-                column(4,
-                  checkboxGroupInput(ns("Display_IHC"), 
-                                   "Display IHC Data", 
-                                   choices = unname(choices_list[["IHC"]])
-                                   )
-                )
+                               uiOutput(ns("apply_table_filters")))
+
     )
   )
 }
