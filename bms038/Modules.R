@@ -36,6 +36,7 @@ Genomics_OutcomeUI = function(id, choices_list_raw, prediff) {
 #      ApplyRemoveUI(ns("INNER")),
       tabsetPanel(
         tabPanel("Survival", 
+                 p(),
                  textOutput(ns("debug_Text")),
                  uiOutput(ns("Choose_Survival_Type")),
                  p(),
@@ -43,14 +44,24 @@ Genomics_OutcomeUI = function(id, choices_list_raw, prediff) {
                  tableOutput(ns("my_Table"))
         ),
         tabPanel("Response",
+                 p(),
                  plotOutput(ns("Response_Plot"))
 #                 p(),
 #                 plotOutput(ns("Response_Plot_2"))
         ),
         tabPanel("Build Your Own Survival Model",
-                 textOutput(ns("BYO_Label")),
-                 uiOutput(ns("Choose_Survival_Type_2")),
+                 p(),
+                 fluidRow(
+                   column(6,uiOutput(ns("Choose_Survival_Type_2"))),
+                   column(6,htmlOutput(ns("BYO_Label")))
+                 ),
+#                 htmlOutput(ns("BYO_Label")),
+#                 uiOutput(ns("Choose_Survival_Type_2")),
                  plotOutput(ns("byoForestPlot")),
+                 htmlOutput(ns("Forest_Count")),
+#                 "Multivariate analysis used",
+#                 textOutput(ns("Forest_Count"), style = "color:red"),
+#                 "patients",
                  bs_accordion(id = prediff) %>%
                    bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
                    bs_append(title = "Exome Features", 
@@ -159,7 +170,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
     return(out_data)
   })
   output$BYO_Label = renderText({
-    paste("Expand your chosen genomic feature, ", input$Sec_Var,", into a multivariate model using the check boxes below this plot", sep = "")
+    paste("Expand your chosen genomic feature, <font color=\"#4da4cb\"><b>", input$Sec_Var,"</b></font>, into a multivariate model using the check boxes below this plot. Note that samples lacking data for any of the features in your model will be automatically excluded from analysis. ", sep = "")
   })
   output$debug_Text = renderText({
     "NOTHING TO DEBUG?"
@@ -217,7 +228,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
   })
   # RADIO BUTTON FOR BUILD-YOUR-OWN SURVIVAL
   output$Choose_Survival_Type_2 = renderUI({
-    radioButtons(ns("Survival_Type_2"), label = "Outcome to Analyze:", choices = list("Overall Survival (OS)" = "OS", "Progression Free Survival (PFS)" = "PFS"), inline=TRUE, selected = "OS")
+    radioButtons(ns("Survival_Type_2"), label = "Outcome for Multivariate Analysis:", choices = list("Overall Survival (OS)" = "OS", "Progression Free Survival (PFS)" = "PFS"), inline=TRUE, selected = "OS")
   })
   # CONDENSE VARIABLES INTO BYO-SURVIVAL MODEL
   ExomeID = reactive({
@@ -260,6 +271,18 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
     if (n_vars > 1) {
       forestfire(my_data(), s_type = input$Survival_Type_2, p1 = BYO_Vars()[1], BYO_Vars()[2:length(BYO_Vars())])
     }
+  })
+  output$Forest_Count = renderText({
+    req(BYO_Vars(), input$Survival_Type_2)
+    n_vars = length(BYO_Vars())
+    if (n_vars == 1) {
+      pt_count = forestcount(my_data(), s_type = input$Survival_Type_2, p1 = BYO_Vars())
+    }
+    if (n_vars > 1) {
+      pt_count = forestcount(my_data(), s_type = input$Survival_Type_2, p1 = BYO_Vars()[1], BYO_Vars()[2:length(BYO_Vars())])
+    }
+    pt_count
+    paste("<center>Multivariate analysis using","<font color=\"#FF0000\"><b>", pt_count, "</b></font>", "patients</center>")
   })
   # PRIMARY SURVIVAL PLOT
   output$Survival_Plot = renderPlot({

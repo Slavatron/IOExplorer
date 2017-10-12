@@ -83,3 +83,29 @@ forestfire = function(df, s_type = "OS", p1, ...) {
   return(fplot)
 }
 
+#' Function for counting eligible samples in a call to forestfire()
+#' @param df dataframe containing all data to be used
+#' @param s_type survival type can be either "OS" or "PFS"
+#' @param p1 predictive variable for survival model
+#' @param ... additional variables to use as predictors
+forestcount = function(df, s_type = "OS", p1, ...) {
+  # DEFINE SURVIVAL TYPE STRICTLY TO AVOID PROBLEMS
+  if (! s_type %in% c("OS", "PFS")) {
+    s_type = "OS"
+  }
+  s_time = paste(s_type, "WK", sep = "")
+  s_event = paste(s_type, "event", sep = "_")
+  # COUNT AND REMOVE NA VALUES
+  text_table = data.frame("Pred" = NA, "NA_Count" = NA)
+  for (i in c(p1, ...)) {
+    n = nrow(df[is.na(df[,i]),])
+    text_table[i, "Pred"] = i
+    text_table[i,"NA_Count"] = n
+  }
+  text_table = text_table[-1,]
+  temp_dat = df[,c("PatientID.x", s_time, s_event, p1, ...)]
+  temp_dat = temp_dat[complete.cases(temp_dat),]
+  # COUNT NUMBER OF PATIENTS ACTUALLY USED
+  n_used = nrow(temp_dat)
+  return(as.character(n_used))
+}
