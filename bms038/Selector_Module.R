@@ -15,7 +15,7 @@ Selection_ModuleUI = function(id, choices_list) {
                               bs_append(title = "Exome", 
                                         content = checkboxGroupInput(ns("Display_Exome"), label = NULL, choices = unname(choices_list[["Exome"]]))) %>%
                               bs_append(title = "RNASeq",
-                                        content = checkboxGroupInput(ns("Display_Exome"), label=NULL, choices=unname(choices_list[["RNASeq"]]))) %>%
+                                        content = checkboxGroupInput(ns("Display_RNA"), label=NULL, choices=unname(choices_list[["RNASeq"]]))) %>%
                               bs_append(title = "TCR Features",
                                         content = checkboxGroupInput(ns("Display_TCR"), label = NULL, choices = unname(choices_list[["TCR"]]))) %>%
                               bs_append(title = "Immune Deconvolution",
@@ -26,7 +26,7 @@ Selection_ModuleUI = function(id, choices_list) {
                    tabPanel("Define Filters",
                             "Select filters to subset data for analysis",
                             bs_accordion(id = "beatles") %>%
-                              bs_set_opts(panel_type = "default", use_heading_link = TRUE) %>%
+                              bs_set_opts(panel_type = "info", use_heading_link = TRUE) %>%
                               bs_append(title = "Cohort", 
                                         content = checkboxGroupInput(ns("Cohort"), label = NULL, choices = c("NIV3-NAIVE", "NIV3-PROG"))) %>%
                               bs_append(title = "Melanoma Subtype", content = checkboxGroupInput(ns("Subtype"), label = NULL, choices = c("BRAF" = "1", "RAS" = "2", "NF1" = "3", "TripleWt" = "4"))) %>%
@@ -42,7 +42,8 @@ Selection_ModuleUI = function(id, choices_list) {
     ),
     mainPanel(width = 9,
               h3("Summary Table"),
-              "Compilation of clinical and genomic data for all 73 patients in BMS-038 dataset. The set of patients included in this table can be filtered using the checkboxes on the left side of the screen. To perform analyses using a filtered subset of the full dataset you must Apply the selected filters using either the checkbox or the radiobuttons. To modify the set of datatypes displayed in this table, use the checkboxes to the right of the table; note that all datatypes are available for relevant analyses regardless of whether they are displayed in this table",
+              "Compilation of clinical and genomic data for all 68 patients in BMS-038 dataset. Use the checkboxes on the left side of the screen to display additional features or to define a filtered subset of patients for comparative analysis on other tabs of this portal. Filters defined on this tab can be turned On/Off on the 'Genomics & Outcome', 'Correlation', and 'Gene Expr' tabs.",
+              #To perform analyses using a filtered subset of the full dataset you must Apply the selected filters using either the checkbox or the radiobuttons. To modify the set of datatypes displayed in this table, use the checkboxes to the right of the table; note that all datatypes are available for relevant analyses regardless of whether they are displayed in this table
               wellPanel(DT::dataTableOutput(ns("table")), style = "overflow-x:scroll; overflow-y:scroll; max-height: 600px"),
               # IF USER SELECTS ANY ROWS IN THE DISPLAY TABLE, GIVE THEM THE OPTION TO FILTER BASED ON THAT
               # (note that this conditional statement uses javascript syntax)

@@ -37,7 +37,7 @@ Genomics_OutcomeUI = function(id, choices_list_raw, prediff) {
       tabsetPanel(
         tabPanel("Survival", 
                  p(),
-                 textOutput(ns("debug_Text")),
+#                 textOutput(ns("debug_Text")),
                  uiOutput(ns("Choose_Survival_Type")),
                  p(),
                  plotOutput(ns("Survival_Plot")),

@@ -33,7 +33,7 @@ hPanel <- headerPanel(
   list(fluidRow(
       column(width=2, style='padding-right:0px;',img(src="logo_only.png",height=100, width=100)),
              #imageOutput("header_image",height=100,width=100)),
-      column(width=10,offset =0, style='padding:0px;', h2("BMS-038 Companion Website",br()),h4("MSKCC/IPOP in collaboration with cBio"))),
+      column(width=10,offset =0, style='padding:0px;', h2("BMS-038 Companion Website",br()),h4("MSKCC/IPOP"))),
     hr())
 )
 

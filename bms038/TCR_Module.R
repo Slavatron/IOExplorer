@@ -20,6 +20,8 @@ require(scales)
 library(DT)
 
 # DEFINE LISTS PAIRING SAMPLE NAMES WITH FILENAMES
+bms_tcr_samples = c("Pt101_on","Pt101_pre","Pt103_on","Pt103_pre","Pt106_on","Pt106_pre","Pt108_on","Pt108_pre","Pt10_on","Pt10_pre","Pt11_on","Pt11_pre","Pt17_on","Pt17_pre","Pt18_on","Pt18_pre","Pt23_on","Pt23_pre","Pt26_on","Pt26_pre","Pt27_on","Pt27_pre","Pt28_on","Pt28_pre","Pt30_on","Pt30_pre","Pt31_on","Pt31_pre","Pt34_on","Pt34_pre","Pt37_on","Pt37_pre","Pt3_on","Pt3_pre","Pt44_on","Pt44_pre","Pt47_on","Pt47_pre","Pt48_on","Pt48_pre","Pt52_on","Pt52_pre","Pt59_on","Pt59_pre","Pt5_on","Pt5_pre","Pt67_on","Pt67_pre","Pt70_on","Pt70_pre","Pt71_on","Pt71_pre","Pt82_on","Pt82_pre","Pt8_on","Pt8_pre","Pt9_on","Pt9_pre")
+
 bms038_samples = list("Pt3_on" = "Pt3_on_S0089498",
                       "Pt3_pre" = "Pt3_pre_S0089487",
                       "Pt5_on" = "Pt5_on_S0089494",
@@ -45,14 +47,15 @@ TCR_Freq_DistUI = function(id) {
   ns = NS(id)
   tagList(
     sidebarPanel(
-      # SELECT STUDY FROM WHICH TO SELECT A SAMPLE
-      # NOTE THAT ALL INPUT/OUTPUT VARIABLES MUST BE CALLED USING ns()
-      selectInput(ns("study"),"STUDY:",
-                  c("Riaz - Melanoma" = "bms_038",
-                    "Sims - Glioma" = "cumc_gbm")
-      ),
-      # SAMPLE CHOICES DEPENDENT UPON ns("study") SELECTION
-      uiOutput(ns("Sample_Choice"))
+      selectInput(ns("sample_name"), "SAMPLE ID:", choices = bms_tcr_samples)
+#      # SELECT STUDY FROM WHICH TO SELECT A SAMPLE
+#      # NOTE THAT ALL INPUT/OUTPUT VARIABLES MUST BE CALLED USING ns()
+#      selectInput(ns("study"),"STUDY:",
+#                  c("Riaz - Melanoma" = "bms_038",
+#                    "Sims - Glioma" = "cumc_gbm")
+#      ),
+#      # SAMPLE CHOICES DEPENDENT UPON ns("study") SELECTION
+#      uiOutput(ns("Sample_Choice"))
     ),
     mainPanel(
       wellPanel(width = 9,style = "background-color: #ffffff;",
@@ -75,8 +78,8 @@ TCR_Freq_DistUI = function(id) {
                                                                "Histogram")),
                                               radioButtons(ns("Ylog"), label=NULL,
                                                            c("Log" = "log",
-                                                             "Linear" = "lin"),width='150px',inline=TRUE),
-                                              downloadButton(ns("downloadPlot"), "Download Plot",plotOutput("distplot"))
+                                                             "Linear" = "lin"),width='150px',inline=TRUE)
+#                                              downloadButton(ns("downloadPlot"), "Download Plot",plotOutput("distplot"))
                                        ),
                                        column(width = 3,
                                               
@@ -183,9 +186,10 @@ TCR_Freq_Dist = function(input, output, session) {
   })
   # CREATE UI FOR CHOOSING SAMPLES BASED ON "study" SELECTION
   # Note that the choices are stored in a list-object called "study_samples_list" with "input$study" as the indexing value
-  output$Sample_Choice = renderUI({
-    radioButtons(ns("sample_name"), "SAMPLE ID:", choices = unname(study_samples_list[[input$study]]))
-  })
+#  output$Sample_Choice = renderUI({
+#    radioButtons(ns("sample_name"), "SAMPLE ID:", choices = bms_tcr_samples)
+#    radioButtons(ns("sample_name"), "SAMPLE ID:", choices = unname(study_samples_list[[input$study]]))
+#  })
   # DISPLAY SAMPLE NAME ON PAGE
   output$display_sample_name <- renderText({
     input$sample_name
