@@ -142,7 +142,8 @@ GeneExprUI = function(id, choices_list) {
                  column(3,
                  selectInput(ns("Samples_Shown"), "Samples Shown", choices = c("Pre-Treatment Only", "Pre and On", "On-Treatment Only"))),
                  column(3,
-                 selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation A", "Annotation B"))),
+                 uiOutput(ns("Sorting_DropDown"))),
+#                 selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation A", "Annotation B"))),
                  column(3,
                         selectInput(ns("Anno_A"), "Annotation A", choices = Expand_Variable_List(choices_list))),
 #                 selectInput(ns("Anno_A"), "Annotation A", choices = list("UV Signature" = "Signature.7",
@@ -280,16 +281,7 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
     req(AggGenes)
     AggGenes()
   }, bordered = TRUE, rownames =TRUE)
-#  output$Selection_Table = DT::renderDataTable({
-#    AggGenes()},
-#    options=list(
-#      orderClasses = TRUE,
-#      lengthMenu = list(
-#        c(-1, 10000, 1000, 100, 10), 
-#        c('All','10000', '1000', '100', '10')),
-#      style="font-size:25%")
-#  )
-  
+
   # DEFINE CHECKBOX OUTPUT OF ALL CHOSEN GENES
   output$GeneCheckBoxes = renderUI({
     checkboxGroupInput(ns("ChosenGenes"), "Chosen Genes:", choices = rownames(subGenes()) )
@@ -399,6 +391,13 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
     dp = subGenes()
     plot(1:10, main = paste(rownames(dp)))
   })
+  output$Sorting_DropDown = renderUI({
+    if (input$Anno_B == "None") {
+      selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation A"))
+    } else {
+      selectInput(ns("Sorting_Method"), "Sort Samples By:", choices = c("Hierarchical Clustering", "Clinical Response", "Annotation A", "Annotation B"))
+    }
+  })
 
 #### HEATMAP...
   # Process input data to either be filtered or not
@@ -425,6 +424,9 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
 #    this_annot <- this_annot[order(this_annot[,3],this_annot[,2],this_annot[,1],decreasing=T),]
     # Define Heatmap 
     gene_order = c()
+    # Scale Expression Matrix before Clustering
+#    this_xdat = t(scale(t(this_xdat)))
+    Exp_Dat = t(scale(t(Exp_Dat)))
     # Cluster selected genes
     rowclust <- hclust(dist(Exp_Dat))
     colclust <- hclust(dist(as.data.frame(t(Exp_Dat))))
@@ -457,7 +459,7 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
 #    gene_order = rowclust$labels[rowclust$order]
 #    sample_order = match(rownames(this_annot), colnames(xdat))
     this_xdat <- xdat[gene_order, sample_order]
-    this_xdat = t(scale(t(this_xdat)))
+#    this_xdat = t(scale(t(this_xdat)))
     # Make sure sorting order is reversed annotation column order
 
 #    # Pre cluster pre sample set genes
