@@ -31,9 +31,12 @@ source("Parsed_GSEA_Sets.R")
 #source("hall_fpkm_parsed.R")
 
 # IMPORT EXPRESSION DATA
-xdat = readRDS("log2.fpkm.with.names.rds") # Log Transformed for plotting
-fpkm_dat = readRDS("fpkm.BMS_038.dups_removed.rds")
+#xdat = readRDS("log2.fpkm.with.names.rds") # Log Transformed for plotting
+xdat = readRDS("new_xdat.rds")
+#fpkm_dat = readRDS("fpkm.BMS_038.dups_removed.rds")
+fpkm_dat = readRDS("new_rld.rds")
 gene_lookup = readRDS("Symbol_Entrez_Table.rds")
+#gene_lookup = readRDS("new_lookup.rds")
 fpkm_MAT = as.matrix(fpkm_dat)
 
 # SEPARATE INTO PRE/ON
@@ -45,9 +48,11 @@ onX = xdat[,-pres]
 
 cytdf = read.csv("bms038_data_050917.csv")
 cytdf = cytdf[cytdf$Sample %in% names(xdat),c("Sample", "cytscore")]
-aDC = readRDS("fpkm.aDC.gsva.RDS")
+#aDC = readRDS("fpkm.aDC.gsva.RDS")
+Cytoxic_Cells = readRDS("rld.Cytoxic.gsva.rds")
+aDC_Set = list("Name" = "Cytoxic", "Hugo" = c("APBA2","APOL3","CTSW","DUSP2","GNLY","GZMA","GZMH","KLRB1","KLRD1","KLRF1","KLRK1","NKG7","RORA","RUNX3","SIGIRR","WHAMMP3","ZBTB16"), "Entrez" = c("10578","1521","1844","22914","2999","3001","321","339005","3820","3824","4818","51348","59307","6095","7704","80833","864"), "GSVA" = Cytoxic_Cells)
 #aDC$Sample = rownames(aDC)
-aDC_Set = list("Name" = "aDC", "Hugo" = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3"), "Entrez" = c("10148","27074","3620", "4940","6346"), "GSVA" = aDC)
+#aDC_Set = list("Name" = "aDC", "Hugo" = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3"), "Entrez" = c("10148","27074","3620", "4940","6346"), "GSVA" = aDC)
 
 
 ###########################################################################
@@ -189,7 +194,8 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
   })
   # Create reactive value for genes selected from pathway checkboxes
   myGenes = reactiveValues(
-    Check = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3")
+    Check = c("APBA2", "APOL3", "CTSW", "DUSP2", "GNLY", "GZMA", "GZMH", "KLRB1", "KLRD1", "KLRF1", "KLRK1", "NKG7", "RORA", "RUNX3", "SIGIRR", "WHAMMP3", "ZBTB16")
+#    Check = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3")
   )
   # Buttons for adding/removing genes
   AddRemoveGenes = reactiveValues(
@@ -328,7 +334,8 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
   })
   # List of GSEA_List instances; gets updated with each click of "SaveGeneSet"
   Saved_Gene_Sets = reactiveValues(
-    aDC = list("Name" = "aDC", "Hugo" = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3"), "Entrez" = c("10148","27074","3620", "4940","6346"), "GSVA" = aDC)
+    Cytoxic_Cells = list("Name" = "Cytoxic", "Hugo" = c("APBA2","APOL3","CTSW","DUSP2","GNLY","GZMA","GZMH","KLRB1","KLRD1","KLRF1","KLRK1","NKG7","RORA","RUNX3","SIGIRR","WHAMMP3","ZBTB16"), "Entrez" = c("10578","1521","1844","22914","2999","3001","321","339005","3820","3824","4818","51348","59307","6095","7704","80833","864"), "GSVA" = Cytoxic_Cells)
+    #aDC = list("Name" = "aDC", "Hugo" = c("CCL1", "EBI3", "IDO1", "LAMP3", "OAS3"), "Entrez" = c("10148","27074","3620", "4940","6346"), "GSVA" = aDC)
   )
   Saved_GSVA_Values = reactive({
     out_data = do.call("rbind", lapply(reactiveValuesToList(Saved_Gene_Sets), function(x) as.data.frame(t(x[[4]]))))
