@@ -12,6 +12,8 @@ Selection_ModuleUI = function(id, choices_list) {
                             "Select clinical/genomic features to display",
                             bs_accordion(id = "Display") %>%
                               bs_set_opts(panel_type = "info", use_heading_link = TRUE) %>%
+                              bs_append(title = "Demographics", 
+                                        content = checkboxGroupInput(ns("Display_Clin"), label = NULL, choices = unname(choices_list[["Clin"]]))) %>%
                               bs_append(title = "Exome", 
                                         content = checkboxGroupInput(ns("Display_Exome"), label = NULL, choices = unname(choices_list[["Exome"]]))) %>%
                               bs_append(title = "RNASeq",
@@ -118,9 +120,14 @@ Selection_Module = function(input, output, session, choices_list, my_data) {
       temp_dat = temp_dat[temp_dat$TCR_Data %in% input$Has_TCR,]
     }
     if (!is.null(input$Response)) {
-      temp_dat = temp_dat[temp_dat$myBOR %in% input$Response,]
+      temp_dat = temp_dat[temp_dat$Response %in% input$Response,]
     }
     return(temp_dat)
+  })
+  ClinID = reactive({
+    my_pos = which(choices_list[["Clin"]] %in% input$Display_Clin)
+    tid = names(choices_list[["Clin"]])[my_pos]
+    return(tid)
   })
   ExomeID = reactive({
     my_pos = which(choices_list[["Exome"]] %in% input$Display_Exome)
@@ -151,12 +158,12 @@ Selection_Module = function(input, output, session, choices_list, my_data) {
   Display_Table = reactive({
     disp_data = filt_data()
     row.names(disp_data) = disp_data$PatientID.x
-    extra_cols = c(ExomeID(), IHCID(), RNAID(), TCRID(), ImmDecID())
+    extra_cols = c(ClinID(), ExomeID(), IHCID(), RNAID(), TCRID(), ImmDecID())
     if (length(extra_cols) == 0 ) {
-      disp_data = disp_data[,c("Cohort", "SubtypeEZ")]
+      disp_data = disp_data[,c("Response", "SubtypeEZ")]
     }
     if (length(extra_cols) > 0) {
-      disp_data = disp_data[,c("Cohort", "SubtypeEZ", extra_cols)]
+      disp_data = disp_data[,c("Response", "SubtypeEZ", extra_cols)]
     }
     names(disp_data)[2] = "Subtype"
     return(disp_data)

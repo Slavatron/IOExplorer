@@ -1,9 +1,12 @@
 # DEFINE OPTIONS FOR DROP-DOWN MENUS for Pre-therapy Tab
 Exome <- list("log10mut" = "Mutation Load (log)", 
-               "log10na" = "Neoantigen Load (log)", 
+               "log10na" = "Neopeptide Load (log)",
+              "log10na2" = "Neoantigen Load (log)",
                "thresh95.muts" = "Clonal Mutation Load",   
                "Signature.1" = "Aging Signature",
-               "Signature.7" ="UV Signature"
+               "Signature.7" ="UV Signature",
+              "Davoli_SCNA" = "Davoli SCNA",
+              "facets_CNA_Genome" = "Fraction Genome CNA"
               )
 
 # Need to add in other T-cell metrics from Jonathan here
@@ -52,7 +55,9 @@ RNASeq <- list("cytscore" = "Cytolytic Score",
 
 # Need to make sure these are exact columns that are used in paper
 ImmuneDeconvolution  <- list("T.cells.CD8" = "CD8 T-Cells",
-                             "T.cells.CD4.naive" = "CD4 T-Cells",
+#                             "T.cells.CD4.naive" = "CD4 T-Cells",
+                             "T.cells.CD4.memory.resting" = "Resting CD4 T-Cells",
+                             "T.cells.CD4.memory.activated" = "Activated CD4 T-Cells",
                              "NK.cells.activated" = "NK Cells",
                              "Macrophages.M1" = "Macrophages",
                              "EST.StromalScore" = "Stromal Score (EST)",
@@ -67,15 +72,31 @@ IHC <- list("PDL1.1plus.pos" = "PDL1 Positive",
                             )
 
 
-# COMBINE INTO SINGLE LIST
+# COMBINE INTO SINGLE LISTS
 pre_choice1 = list("Exome" = unlist(Exome), "RNASeq" = unlist(RNASeq), "IHC" = unlist(IHC), "TCR" = unlist(TCR), "Immune Deconvolution" = unlist(ImmuneDeconvolution))
 
+# Clinical features
+Clin = list("Sex" = "Sex",
+            "Age" = "Age",
+            "Cohort" = "Cohort",
+#            "PreTreat_Exome" = "Pre-Treatment Exome Sequenced",
+#            "OnTreat_Exome" = "On-Treatment Exome Sequenced",
+#            "TCR_Data" = "TCR Sequenced",
+#            "SubtypeEZ" = "Mutational Subtype",
+            "Stage" = "Stage"
+            )
+
+pre_choice2 = list("Clin" = unlist(Clin), "Exome" = unlist(Exome), "RNASeq" = unlist(RNASeq), "IHC" = unlist(IHC), "TCR" = unlist(TCR), "Immune Deconvolution" = unlist(ImmuneDeconvolution))
+# Copy Number Features
+#CNV = list("")
 ###################################################
 
 # DEFINE OPTIONS FOR DROP-DOWN MENUS for Diff-therapy Tab
 Exome_Diff <- list("delt.log10mut" = "Change in Mutation Load (log)", 
-              "delt.log10na" = "Change in Neoantigen Load (log)", 
-              "delt.thresh95.muts" = "Change in Clonal Mutation Load",   
+              "delt.log10na" = "Change in Neopeptide Load (log)", 
+              "delt.log10na2" = "Change in Neoantigen Load (log)", 
+              "delt.thresh95.muts" = "Change in Clonal Mutation Load",
+              "Clonal_Contraction" = "Clonal Contraction vs. Persistance",
               "delt.Signature.1" = "Change in Aging Signature",
               "delt.Signature.7" ="Change in UV Signature"
 )
@@ -114,4 +135,4 @@ diff_choice1 = list("Exome" = unlist(Exome_Diff), "RNASeq" = unlist(RNASeq_Diff)
 
 ###################################################
 
-selector_choice1 = pre_choice1 
+#selector_choice1 = pre_choice1 

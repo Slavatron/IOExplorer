@@ -85,10 +85,10 @@ Clonality = function(input, output, session, my_data, clin) {
 #  rownames(brpct) = brpct[,1]
 #
 #  #response class per sample
-#  my_response = unique(data.frame(gsub('_.*', '', clin$Sample), clin$myBOR))
+#  my_response = unique(data.frame(gsub('_.*', '', clin$Sample), clin$Response))
 #  my_class = as.character(my_response[,2])
 #  names(my_class) = my_response[,1]
-  my_response = clin[,c("PatientID.x", "myBOR")]
+  my_response = clin[,c("PatientID.x", "Response")]
   my_class = as.character(my_response[,2])
   names(my_class) = my_response[,1]
 

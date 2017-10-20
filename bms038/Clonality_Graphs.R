@@ -40,11 +40,11 @@ clonality_waterfall = function(dd, clin, ccf.type = "pyclone", threshold = 0.9, 
   dd = update.ccf(dd, ccf.type, threshold, ci)
   clin = update.clonal_growth(dd, clin)
 
-  temp_dat = clin[,c("PatientID.x", "Clonal_Growth", "myBOR")]
+  temp_dat = clin[,c("PatientID.x", "Clonal_Growth", "Response")]
   temp_dat = temp_dat[temp_dat$PatientID.x %in% dd$sample,]
   temp_dat = temp_dat[order(temp_dat$Clonal_Growth),]
-  #wf = data.frame(Pos = 1:nrow(temp_dat), Patient = temp_dat$PatientID.x, Clonal_Growth = temp_dat$Clonal_Growth, Response = temp_dat$myBOR)
-  wf = data.frame(Pos = 1:nrow(temp_dat), Patient = as.character(temp_dat$PatientID.x), Clonal_Growth = temp_dat$Clonal_Growth, Response = temp_dat$myBOR)
+  #wf = data.frame(Pos = 1:nrow(temp_dat), Patient = temp_dat$PatientID.x, Clonal_Growth = temp_dat$Clonal_Growth, Response = temp_dat$Response)
+  wf = data.frame(Pos = 1:nrow(temp_dat), Patient = as.character(temp_dat$PatientID.x), Clonal_Growth = temp_dat$Clonal_Growth, Response = temp_dat$Response)
   pt_names = as.character(wf$Patient)
   wf$Patient = factor(wf$Patient, levels = pt_names)
   w_plot = ggplot(wf, aes(x = Patient, y = Clonal_Growth)) +

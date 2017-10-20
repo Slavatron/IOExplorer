@@ -299,7 +299,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
   })
   # PRODUCE BOXPLOT COMPARING RESPONSE GROUPS TO CONTINUOUS VARIABLE
   output$Response_Plot = renderPlot({
-    my_obj = clever_gg_boxplot(my_data(), "myBOR", getID(), title = paste(input$Sec_Var, "vs. Response"))
+    my_obj = clever_gg_boxplot(my_data(), "Response", getID(), title = paste(input$Sec_Var, "vs. Response"))
     # PREPARE P-VALUE CAPTION
     pv_text = paste("Pairwise T-Test P-value =", round(my_obj[[3]]$p.value, digits = 4), "\nPairwise Wilcoxon Test P-value =", round(my_obj[[4]]$p.value, digits = 4), "\nCut-point =", input$slider_value)
     # HARD-CODE COLORS FOR RESPONSE PLOT
@@ -323,7 +323,7 @@ Genomics_Outcome = function(input, output, session, choices_list_raw, filterdata
     temp_data$Group = factor(temp_data$Group)
     
     # PREPARE PLOT/ANALYSIS OBJECT
-    obj_2 = Count_Data_Barplot(temp_data, "myBOR", "Group", x_lab = input$Sec_Var, g_lab = "Response", title = "Distribution of Responders Relative Within Selected Range")
+    obj_2 = Count_Data_Barplot(temp_data, "Response", "Group", x_lab = input$Sec_Var, g_lab = "Response", title = "Distribution of Responders Relative Within Selected Range")
     # PREPARE P-VALUES TEXT
     pv_text = paste("Chi-Squared P-value =", round(obj_2[[4]], digits = 4), "\nFisher Test P-value =", round(obj_2[[6]], digits = 4), "\nCut-point =", input$slider_value)
     # HARD-CODE COLORS FOR RESPONSE PLOT

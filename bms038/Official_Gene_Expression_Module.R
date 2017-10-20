@@ -73,7 +73,7 @@ make_heatmap = function(exp_mtx, annot_mtx, title_txt = "mRNA Expression", ann_c
 }
 # DEFINE HEATMAP COLOR PALETTES
 ann_colors = list(
-  myBOR = c("PRCR" = "green3", "SD" = "blue", "PD" = "red"),
+  Response = c("PRCR" = "green3", "SD" = "blue", "PD" = "red"),
   SampleType = c("on" = "yellow", "pre" = "black"),
   SubtypeEZ = c("BRAF" = "royalblue", "RAS" = "gold", "NF1" = "black", "TripleWt" = "green"),
   cytscore = colorRampPalette(brewer.pal(9, "Reds"))(100),
@@ -416,9 +416,9 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
     # Filter Expression data to match Annotation data
     Exp_Dat = Exp_Dat[,rownames(heatmap_annot)]
     # Define the Annotation data.frame used for plotting 
-    this_ant_col = c(input$Anno_A, "myBOR", "SampleType")
+    this_ant_col = c(input$Anno_A, "Response", "SampleType")
     if (input$Anno_B != "None") {
-      this_ant_col = c(input$Anno_B, input$Anno_A, "myBOR", "SampleType")
+      this_ant_col = c(input$Anno_B, input$Anno_A, "Response", "SampleType")
     }
     this_annot <- heatmap_annot[,match(this_ant_col, colnames(heatmap_annot))]
 #    this_annot <- this_annot[order(this_annot[,3],this_annot[,2],this_annot[,1],decreasing=T),]
@@ -446,7 +446,7 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
       sample_order = colclust$labels[colclust$order]
     }
     if (input$Sorting_Method == "Clinical Response") {
-      sample_order = rownames(this_annot[order(this_annot$SampleType, this_annot$myBOR, decreasing=T),])
+      sample_order = rownames(this_annot[order(this_annot$SampleType, this_annot$Response, decreasing=T),])
     }
     if (input$Sorting_Method == "Annotation A") {
       sample_order = rownames(this_annot[order(this_annot[,input$Anno_A], this_annot$SampleType, decreasing=T),])
