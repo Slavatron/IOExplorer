@@ -158,7 +158,7 @@ clever_gg_boxplot = function(df, x, y, x_lab = "", y_lab = y, title = "") {
   # ENSURE ARGUMENTS ARE VALID
   if (!class(df) == "data.frame") { stop("df should be a data.frame")}
   if (!x %in% names(df)) { stop("x is not a variable in df")}
-  if (!class(df[,x]) %in% c("logical", "factor", "integer", "ordered")) { stop("x should be a categorical variable")}
+#  if (!class(df[,x]) %in% c("logical", "factor", "integer", "ordered")) { stop("x should be a categorical variable")}
   if (!y %in% names(df)) { stop("y is not a variable in df")}
   if (!class(df[,y]) %in% c("numeric", "integer")) { stop("y should be a continuous variable")}
   # REMOVE ROWS LACKING DATA
