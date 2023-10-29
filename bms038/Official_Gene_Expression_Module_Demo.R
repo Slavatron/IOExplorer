@@ -332,7 +332,9 @@ GeneExpr = function(input, output, session, choices_list) {
     Entrez = gene_lookup[gene_lookup$Gene %in% Hugo,"Entrez"]
     genelist = list(Entrez)
     # Run GSVA 
-    scores <- gsva(fpkm_MAT,genelist,method="ssgsea",rnaseq=T, verbose = T)
+    GPARAM <- gsvaParam(fpkm_MAT, genelist)
+    scores <- gsva(GPARAM)
+    #scores <- gsva(fpkm_MAT,genelist,method="ssgsea",rnaseq=T, verbose = T)
     # Define Progress Bar object to let User know this takes a while 
     progress <- shiny::Progress$new()
     # Make sure it closes when we exit this reactive, even if there's an error
