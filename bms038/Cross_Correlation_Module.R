@@ -11,8 +11,8 @@
 #' @param t - variable in df to be displayed in hover-over text
 #' @param c - variable in df to define colors; should always be "Response" in BMS Portal
 scatter_plotly = function(df, x, y, x_lab = x, y_lab = y, t, c) {
-  my_fit = lm(df[,y] ~ df[,x])
-  s_plot = ggplot(df, aes_string(x = x, y = y, text = t, color = c)) +
+  my_fit = lm(df[[y]] ~ df[[x]])
+  s_plot = ggplot(df, aes(x = !!sym(x), y = !!sym(y), text = !!sym(t), color = !!sym(c))) +
     geom_abline(intercept = my_fit$coefficients[1], slope = my_fit$coefficients[2], size = 0.25) +
     geom_point() +
     scale_colour_manual(name = "", 
@@ -204,7 +204,7 @@ CrossTab <- function(input, output, session, choices_list_raw, filt_data, full_d
     tid_x = getID_X()
     tid_y = getID_Y()
     pdf(NULL);
-    scatter_plotly(my_data(), tid_x, tid_y, y_lab = input$cross_sec_var, x_lab = input$cross_sec_var_2, t = my_data()[,"PatientID.x"], c = my_data()[,"Response"])
+    scatter_plotly(my_data(), tid_x, tid_y, y_lab = input$cross_sec_var, x_lab = input$cross_sec_var_2, t = "PatientID.x", c = "Response") #t = my_data()[,"PatientID.x"], c = my_data()[,"Response"])
   })
 
 }

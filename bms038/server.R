@@ -12,7 +12,7 @@ require(plotly)
 require(Cairo)
 require(RColorBrewer)
 require(ks)
-
+require(rlang)
 
 source("key_columns.R")
 source("graphs.R")

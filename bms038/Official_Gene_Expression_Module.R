@@ -405,6 +405,8 @@ GeneExpr = function(input, output, session, choices_list, filterdata, fulldata) 
   # Process input data to either be filtered or not
   my_data = callModule(ApplyRemove, "INNER", filterdata(), fulldata)
   output$HeatMap = renderPlot({
+    # DEBUG
+    print("Rendering heatmap")
     # Load data for Annotation and Expression
     heatmap_annot <- my_data()[which(my_data()$Sample %in% c(colnames(preX), colnames(onX))), ]
     Exp_Dat = PreOnGenes()
