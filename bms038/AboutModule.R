@@ -17,7 +17,7 @@ AboutUI = function(id) {
              "when publishing results produced using this portal.",
              p(),
              "Code and additional processed data to reproduce key results contained within the manuscript are available at ",
-             tags$a(href="https://github.com/riazn/bms038_analysis","https://github.com/riazn/bms038_analysis."),
+             tags$a(href="https://github.com/Slavatron/IOExplorer","https://github.com/Slavatron/IOExplorer."),
              p(),
              "All analytical tools found on this portal were built using ",
              tags$a(href="http://shiny.rstudio.com", "R Shiny."),
